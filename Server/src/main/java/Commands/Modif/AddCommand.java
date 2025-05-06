@@ -4,9 +4,6 @@ import Classes.Route;
 import Collection.RouteCollectionManager;
 import Commands.Command;
 import Commands.CommandResponse;
-import InputHandler.InputProvider;
-import InputHandler.KeyboardInputProvider;
-import InputHandler.inputObject;
 import com.google.gson.Gson;
 
 public class AddCommand implements Command {
@@ -21,7 +18,8 @@ public class AddCommand implements Command {
         try {
             // Десериализуем объект Route из jsonArgs (например, через Gson)
             Route route = gson.fromJson(jsonArgs, Route.class);
-
+            int id = (int) collectionManager.generateNextId();
+            route.setId(id);
             // Добавляем в коллекцию
             collectionManager.addToCollection(route);
 

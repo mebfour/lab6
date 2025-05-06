@@ -1,18 +1,11 @@
 package Commands.XmlProcessing;
 
-
-
 import Classes.Route;
 import Collection.RouteCollectionManager;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 
 import java.io.*;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 
 
@@ -25,8 +18,9 @@ public class XmlRouteReader {
             Unmarshaller unmarshaller = context.createUnmarshaller();
             return (RouteWrapper) unmarshaller.unmarshal(new File(filePath));
         } catch (Exception e) {
-            e.printStackTrace();
+
             System.err.println("Ошибка при чтении из XML");
+            e.printStackTrace();
             return new RouteWrapper();
         }
     }
