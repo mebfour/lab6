@@ -1,20 +1,30 @@
-package Server.Commands.Ordin;
+package Commands.Ordin;
 
-import CollectionManagement.RouteCollectionManager;
-import Server.Commands.Command;
-import Server.Commands.CommandList;
+import Collection.RouteCollectionManager;
+import Commands.CommandResponse;
+import Commands.Command;
+import Commands.CommandList;
+
+import java.util.Map;
+
+import static managers.CommandManager.commandList;
 
 public class HelpCommand implements Command {
-    private final CommandList commandList;
 
-    public HelpCommand(CommandList commandList){this.commandList = commandList;}
+
+
     @Override
-    public void execute(String args) {
+    public CommandResponse execute(String args) {
         System.out.println("Доступные команды:");
-
-        commandList.getAll().forEach(cmd ->
-                System.out.printf("  %-15s %s%n", cmd.getName(), cmd.getDescription()));
+        String ans ="";
+        for (Map.Entry<String, Command> currentCommand : commandList.entrySet()) {
+            String commandName = currentCommand.getKey();
+            Command command = commandList.get(commandName);
+            ans += ("- " + commandName +" "+ command.getDescription()+'\n');
+        }
+        return new CommandResponse(ans, true);
     }
+
 
     @Override
     public String getName() {

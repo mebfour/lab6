@@ -1,16 +1,21 @@
-package Server.Commands;
+package Commands;
+import Commands.Ordin.ExitCommand;
+import Commands.Command;
+
 import java.util.*;
 
 /**
  * Хранит все доступные команды и позволяет их искать по имени.
  */
 public class CommandList {
+
+
     private final Map<String, Command> commands = new HashMap<>();
 
     /**
      * Регистрирует новую команду.
      */
-    public void register(Command command) {
+    public void register(ExitCommand command) {
         commands.put(command.getName().toLowerCase(), command);
     }
 

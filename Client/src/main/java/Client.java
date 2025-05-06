@@ -1,11 +1,19 @@
+import ToStart.CommandRequest;
+
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.Scanner;
+
+import ToStart.CommandResponse;
+import com.google.gson.Gson;
 
 public class Client {
 
     private Socket socket;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
+    private Gson gson = new Gson();
 
     // Метод для подключения к серверу
     public void connect(String serverAddress, int port) {
@@ -54,19 +62,52 @@ public class Client {
             System.err.println("Ошибка при закрытии соединения: " + e.getMessage());
         }
     }
+    public void startInteractiveSession(String filePath) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                System.out.print("Введите команду: ");
+                String inputComm = scanner.nextLine().trim();
 
-    // Точка входа в программу
+                if (inputComm.isEmpty()) {
+                    continue; // игнорируем пустые строки
+                }
+                String[] parts = inputComm.split(" ");
+                String commandName = parts[0];
+                String[] args = Arrays.copyOfRange(parts, 1, parts.length);
+                String argsStr = String.join(" ", args);
+                CommandRequest commandRequest = new CommandRequest(commandName, argsStr);
+
+                // Сериализуем в JSON
+                String jsonRequest = gson.toJson(commandRequest);
+                // Отправляем команду на сервер
+                outputStream.writeUTF(jsonRequest);
+                outputStream.flush();
+
+                // Читаем ответ от сервера
+                String jsonResponse = inputStream.readUTF();
+                CommandResponse response = gson.fromJson(jsonResponse, CommandResponse.class);
+
+                System.out.println("Сообщение от сервера:\n" + response.getMessage());
+
+                // Если команда exit, то завершаем цикл
+                if (inputComm.equalsIgnoreCase("exit")) {
+                    System.out.println("Завершение сессии.");
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Ошибка во время сессии"
+            );
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
-        // Создаем экземпляр клиента
         Client client = new Client();
+        client.connect("localhost", 7878);
 
-        // Подключаемся к серверу (укажите адрес и порт сервера)
-        client.connect("localhost", 8080);
-
-        // Отправляем команду "exit"
-        client.sendExitCommand();
-
-        // Закрываем соединение
-        client.disconnect();
+        if (client.outputStream != null && client.inputStream != null) {
+            client.startInteractiveSession("file.xml");
+        }
     }
 }

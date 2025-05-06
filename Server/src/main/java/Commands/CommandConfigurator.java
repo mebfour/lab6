@@ -1,8 +1,9 @@
-package Server.Commands;
+package Commands;
 
-import CollectionManagement.RouteCollectionManager;
-import Server.Commands.Ordin.ExitCommand;
-import Server.Commands.Ordin.HelpCommand;
+import Collection.RouteCollectionManager;
+import Commands.Ordin.ExitCommand;
+import Commands.CommandList;
+//import Commands.Ordin.HelpCommand;
 
 /**
  * Для добавления команд в commandList
@@ -16,8 +17,15 @@ public class CommandConfigurator {
     public static synchronized CommandList configureCommands(RouteCollectionManager manager){
         CommandList commandList = new CommandList();
 
-        commandList.register(new ExitCommand(manager));
-        commandList.register(new HelpCommand(commandList));
+        Runnable shutdownHook = new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        };
+        ExitCommand exit = new ExitCommand();
+        commandList.register(exit);
+        //commandList.register(new HelpCommand(commandList));
         return commandList;
     }
 }

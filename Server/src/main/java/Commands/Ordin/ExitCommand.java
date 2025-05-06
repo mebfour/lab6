@@ -1,23 +1,21 @@
 package Commands.Ordin;
 
 import Collection.RouteCollectionManager;
-import Server.Commands.Command;
+import Commands.CommandResponse;
+import Commands.Command;
+
 
 public class ExitCommand implements Command {
 
-    private final Runnable shutdownHook;
 
+    public ExitCommand() {
 
-    private final RouteCollectionManager manager;
-    public ExitCommand(RouteCollectionManager manager, Runnable shutdownHook) {
-        this.shutdownHook = shutdownHook;
-        this.manager = manager;
     }
 
 
+
     @Override
-    public void execute(String args) {
-        shutdownHook.run();
+    public CommandResponse execute(String args) {
         return new CommandResponse(" ______\n" +
                 "< bye >\n" +
                 " ------\n" +
@@ -29,7 +27,7 @@ public class ExitCommand implements Command {
                 "\n" +
                 "\n" +
                 "\n" +
-                "\n");
+                "\n", true);
 
     }
 

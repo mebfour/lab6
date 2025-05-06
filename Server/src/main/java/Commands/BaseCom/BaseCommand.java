@@ -1,7 +1,8 @@
-package Server.Commands.BaseCom;
+package Commands.BaseCom;
 
-import Server.Commands.Command;
-import CollectionManagement.RouteCollectionManager;
+import Commands.CommandResponse;
+import Commands.Command;
+import Collection.RouteCollectionManager;
 
 /**
  * Абстрактный класс для команд, работающих с общими полями
@@ -16,8 +17,8 @@ public abstract class BaseCommand implements Command {
     }
 
     @Override
-    public void execute(String args) {
-
+    public CommandResponse execute(String args) {
+        return null;
     }
 
     @Override

@@ -1,7 +1,8 @@
-package Server.Commands;
+package Commands;
 
 import Exceptions.CommandException;
 
+import Commands.Command;
 /**
  * Только выполняет команды из CommandList.
  */
