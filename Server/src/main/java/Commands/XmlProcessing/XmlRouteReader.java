@@ -19,15 +19,15 @@ import java.util.LinkedHashMap;
 
 public class XmlRouteReader {
 
-    public static LinkedHashMap<String, Route> readRoutesFromXml (String filePath){
-        try (FileReader reader = new FileReader(filePath)) {
-            Type type = new TypeToken<LinkedHashMap<String, Route>>(){}.getType();
-            LinkedHashMap<String, Route> routeMap = new Gson().fromJson(reader, type);
-            if (routeMap == null) return new LinkedHashMap<>(); // если файл пустой
-            return routeMap;
+    public static RouteWrapper readRoutesFromXml (String filePath){
+        try {
+            JAXBContext context = JAXBContext.newInstance(RouteWrapper.class, Route.class);
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+            return (RouteWrapper) unmarshaller.unmarshal(new File(filePath));
         } catch (Exception e) {
-            System.err.println("Ошибка чтения коллекции из JSON: " + e.getMessage());
-            return new LinkedHashMap<>();
+            e.printStackTrace();
+            System.err.println("Ошибка при чтении из XML");
+            return new RouteWrapper();
         }
     }
     private static LinkedHashMap<String, Route> readDefaultFile() {
@@ -38,6 +38,9 @@ public class XmlRouteReader {
                     JAXBContext context = JAXBContext.newInstance(RouteWrapper.class);
                     Unmarshaller unmarshaller = context.createUnmarshaller();
                     RouteWrapper wrapper = (RouteWrapper) unmarshaller.unmarshal(is);
+                    if (wrapper.getInitializationTime()!= null){
+                        RouteCollectionManager.setInitializationTime(wrapper.getInitializationTime());
+                    }
                     return wrapper.getRouteMap() != null ?
                             new LinkedHashMap<>(wrapper.getRouteMap()) :
                             new LinkedHashMap<>();

@@ -2,6 +2,7 @@ package Collection;
 
 import Classes.Route;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -13,25 +14,27 @@ import java.util.LinkedHashMap;
  * Инкапсулирует логику работы с данными.
  */
 
+import Commands.XmlProcessing.RouteWrapper;
 import Commands.XmlProcessing.XmlRouteReader;
 import com.google.gson.Gson;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "routeList")
 public class RouteCollectionManager {
     public transient static String globalFilePath = "D:/itmo/jaba/lab6/Server/src/main/java/file.xml";
-    public static LinkedHashMap<String, Route> routeList = XmlRouteReader.readRoutesFromXml(globalFilePath);
-    private static Date initializationTime;
+    public static LinkedHashMap<String, Route> routeList = XmlRouteReader.readRoutesFromXml(globalFilePath).getRouteMap();
+    private static Date initializationTime = new Date();
 
 
 
 
     public static void init(String path) {
         globalFilePath = path;
-        initializationTime = new Date();
-        routeList = XmlRouteReader.readRoutesFromXml(globalFilePath);
-        setInitializationTime(new Date());
+        routeList = XmlRouteReader.readRoutesFromXml(globalFilePath).getRouteMap();
+
     }
 
     public static Date getInitializationTime() {
@@ -64,11 +67,21 @@ public class RouteCollectionManager {
 
 
     public void saveToFile() {
-        try (Writer writer = new FileWriter(globalFilePath)) {
+        String filePath = globalFilePath;
+        try {
+            RouteWrapper wrapper = new RouteWrapper();
+            wrapper.setRouteMap(routeList);
+            wrapper.setInitializationTime(initializationTime);
 
-            new Gson().toJson(this, writer);
-        } catch (IOException e) {
-            System.err.println("Ошибка сохранения изменений в файл");
+            JAXBContext context = JAXBContext.newInstance(RouteWrapper.class, Route.class);
+            Marshaller marshaller = context.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+            marshaller.marshal(wrapper, new File(filePath));
+        } catch (Exception e) {
+
+            System.err.println("Ошибка при сохранении в XML");
         }
+
     }
 }

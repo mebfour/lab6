@@ -16,7 +16,7 @@ public class InfoCommand implements Command {
         Date time = collectionManager.getInitializationTime();
         String type = collectionManager.getCollectionType().getSimpleName();
         int size = collectionManager.getCollection().size();
-
+        System.out.println("Дата инициализации коллекции: " + time.toString().substring(0, 10));
         // Формируем строку-ответ
         String info = "Тип коллекции: " + type + '\n'
                 + "Дата инициализации коллекции: " + time.toString().substring(0, 10) + " "
