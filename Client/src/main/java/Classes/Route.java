@@ -2,14 +2,8 @@ package Classes;
 
 
 
-import jakarta.xml.bind.annotation.*;
-
 import java.util.Date;
 
-
-@XmlRootElement(name = "route") // Указываем, что это корневой элемент XML
-@XmlAccessorType(XmlAccessType.PROPERTY)
-@XmlType(propOrder = {"key", "name", "coordinates", "creationDate", "to", "from", "distance", "id"})//упорядочения элементов в XML.
 public class Route {
     private static int idGenerator=1;
     private int id; //Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
@@ -48,13 +42,13 @@ public class Route {
     public void setKey(String key) {
         this.key = key;
     }
-    @XmlElement(name= "key")    // xml имя элемента
+
     public String getKey(){
         return key;
     }
 
 
-    @XmlElement(name= "name")
+
     public String getName() {
         return name;
     }
@@ -63,7 +57,7 @@ public class Route {
         this.name = name;
     }
 
-    @XmlElement(name= "coordinates")
+
     public Coordinates getCoordinates() {
         return coordinates;
     }
@@ -75,11 +69,11 @@ public class Route {
     public Date getCreationDate() {
         return creationDate;
     }
-    @XmlElement(name= "creationDate")
+
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
-    @XmlElement(name = "to")
+
     public Location getTo() {
         return to;
     }
@@ -87,7 +81,7 @@ public class Route {
     public void setTo(Location to) {
         this.to = to;
     }
-    @XmlElement(name="from")
+
     public Location getFrom() {
         return from;
     }
@@ -95,7 +89,7 @@ public class Route {
     public void setFrom(Location from) {
         this.from = from;
     }
-    @XmlElement(name="distance")
+
     public Double getDistance() {
         return distance;
     }
@@ -111,7 +105,7 @@ public class Route {
         this.id = idGenerator++;
         this.creationDate = new Date();
     }
-    @XmlElement(name="id")
+
     public int getId() {
         return id;
     }

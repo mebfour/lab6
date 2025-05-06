@@ -6,7 +6,10 @@ import Collection.RouteCollectionManager;
 import Commands.*;
 //import Commands.ForScript.ExecuteScript;
 //import Commands.XmlProcessing.SaveCommand;
+import Commands.BaseCom.InfoCommand;
+import Commands.BaseCom.ShowCommand;
 import Commands.Command;
+import Commands.Modif.AddCommand;
 import Commands.Ordin.ExitCommand;
 import Commands.Ordin.HelpCommand;
 
@@ -17,13 +20,13 @@ import java.util.Map;
 
 public class CommandManager {
     public static Map<String, Command> commandList = new HashMap<>();
-
+    public static RouteCollectionManager collectionManager = new RouteCollectionManager();
     static {
 
         commandList.put("exit", new ExitCommand());
-//        commandList.put("add", new AddCommand());
-//        commandList.put("info", new InfoCommand());
-//        commandList.put("show", new ShowCommand());
+        commandList.put("add", new AddCommand(collectionManager));
+        commandList.put("info", new InfoCommand());
+        commandList.put("show", new ShowCommand());
 //        commandList.put("insert_with_key", new InsertWithKey());
 //        commandList.put("update_id", new UpdateID());
         commandList.put("help", new HelpCommand());
@@ -43,6 +46,7 @@ public class CommandManager {
 
         Command command = commandList.get(commandName);
         if (command != null) {
+
             return command.execute(request.getArgs());
         } else {
             return new CommandResponse("Такой команды нет, давайте попробуем другой набор символов", false);

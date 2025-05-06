@@ -1,4 +1,4 @@
-package ClientHandler;
+package InputHandler;
 
 import Commands.CommandProcessor;
 import Commands.CommandRequest;

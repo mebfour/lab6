@@ -1,6 +1,6 @@
 package network;
 
-import ClientHandler.ClientHandler;
+import InputHandler.ClientHandler;
 import Commands.CommandProcessor;
 
 import java.io.IOException;

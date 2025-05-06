@@ -28,6 +28,11 @@
             <version>2.8.9</version>
         </dependency>
         <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.2</version>
+        </dependency>
+        <dependency>
             <groupId>com.example.lab6</groupId>
             <artifactId>common</artifactId>
             <version>1.0-SNAPSHOT</version>

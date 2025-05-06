@@ -1,3 +1,7 @@
+import Classes.Route;
+import Commands.ClientCommand;
+import InputHandler.KeyboardInputProvider;
+import InputHandler.inputObject;
 import ToStart.CommandRequest;
 import ToStart.CommandResponse;
 import com.google.gson.Gson;
@@ -11,9 +15,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NioClient {
 
+
     private SocketChannel socketChannel;
     private Selector selector;
     private final Gson gson = new Gson();
+    private final Map<String, ClientCommand> commandMap = new HashMap<>();
 
     private final ByteBuffer readLengthBuffer = ByteBuffer.allocate(4); // для чтения длины
     private ByteBuffer readDataBuffer = null; // для чтения данных сообщения
@@ -166,15 +172,32 @@ public class NioClient {
                 String[] args = Arrays.copyOfRange(parts, 1, parts.length);
                 String argsStr = String.join(" ", args);
 
-                CommandRequest commandRequest = new CommandRequest(commandName, argsStr);
-                String jsonRequest = gson.toJson(commandRequest);
 
-                sendMessage(jsonRequest);
+                switch (commandName) {
+                    case "exit":
+                        System.out.println("Завершение работы клиента...");
+                        socketChannel.close();
+                        System.exit(0);
+                        break;
+                    case "add":
+                        Route route = new Route();
+                        // 2. Заполняем его через inputObject
+                        route = inputObject.inputObject(route, new KeyboardInputProvider());
+                        // 3. Сериализуем в JSON (или другой формат)
+                        String jsonRoute = gson.toJson(route);
+                        // 4. Формируем запрос с командой и данными
+                        CommandRequest commandRequest = new CommandRequest("add", jsonRoute);
+                        String jsonRequest = gson.toJson(commandRequest);
+                        // 5. Отправляем на сервер
+                        sendMessage(jsonRequest);
+                        break;
+                    default:
+                        // Остальные команды
+                        CommandRequest defaultRequest = new CommandRequest(commandName, argsStr);
+                        String defaultJsonRequest = gson.toJson(defaultRequest);
+                        sendMessage(defaultJsonRequest);
+                        break;
 
-                if (inputComm.equalsIgnoreCase("exit")) {
-                    System.out.println("Завершение работы клиента...");
-                    socketChannel.close();
-                    System.exit(0);
                 }
             }
         } catch (IOException e) {

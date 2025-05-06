@@ -15,7 +15,7 @@ public class ExitCommand implements Command {
 
 
     @Override
-    public CommandResponse execute(String args) {
+    public CommandResponse execute (String args) {
         return new CommandResponse(" ______\n" +
                 "< bye >\n" +
                 " ------\n" +
