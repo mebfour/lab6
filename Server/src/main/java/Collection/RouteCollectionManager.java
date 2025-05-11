@@ -24,10 +24,13 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "routeList")
 public class RouteCollectionManager {
-    public transient static String globalFilePath = "file.xml";
+    public static String globalFilePath = "D:/itmo/jaba/lab5ALLBLYT/mav3/src/main/java/files/file.xml";
     public static LinkedHashMap<String, Route> routeList = XmlRouteReader.readRoutesFromXml(globalFilePath).getRouteMap();
     private static Date initializationTime = new Date();
-    private int currentMaxId = 0;
+    private int currentMaxId = (int) routeList.values().stream()
+                .mapToLong(Route::getId)
+                .max()
+                .orElse(0);
     public synchronized long generateNextId() {
         return ++currentMaxId;
     }

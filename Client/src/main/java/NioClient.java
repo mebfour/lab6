@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NioClient {
 
-
+    private volatile boolean readyForInput = true;
     private SocketChannel socketChannel;
     private Selector selector;
     private  final Gson gson = new Gson();
@@ -38,7 +38,7 @@ public class NioClient {
             socketChannel.connect(new InetSocketAddress(host, port));
             socketChannel.register(selector, SelectionKey.OP_CONNECT);
 
-            new Thread(() -> consoleInputLoop("file.xml")).start();
+            new Thread(() -> consoleInputLoop("D:\\itmo\\jaba\\lab6\\Server\\target\\file.xml")).start();
 
 
             while (true) {
@@ -110,13 +110,10 @@ public class NioClient {
             String jsonResponse = new String(data);
 
             CommandResponse response = gson.fromJson(jsonResponse, CommandResponse.class);
-            if (!response.isSuccess()) {
-                System.out.println("Ошибка: " + response.getMessage());
-                // Просто продолжаем цикл, приглашая пользователя ввести команду заново
-            }
-            System.out.println("Ответ сервера:\n" + response.getMessage());
 
+            System.out.println(response.getMessage());
             readDataBuffer = null; // готовимся к следующему сообщению
+            readyForInput = true;
         }
     }
 
@@ -175,7 +172,39 @@ public class NioClient {
                     sendMessage(jsonRequest);
                     break;
                 }
-                case "remove_by_key": {
+            case "insert_with_key": {
+                Route route = new Route();
+                Scanner scanner = new Scanner(System.in);
+                String key;
+                if (args.length > 1) {
+                    key = args[1];
+                } else {
+                    System.out.print("Введите ключ: ");
+                    key = scanner.nextLine().trim();
+                    while (key.isEmpty()) {
+                        System.out.println("Ключ не может быть пустым. Повторите ввод.");
+                        key = scanner.nextLine().trim();
+                    }
+                }
+
+                route.setKey(key);
+
+                // Заполняем остальные поля объекта
+                route = inputObject.inputObject(route, provider);
+
+                // Сериализуем в JSON
+                String jsonRoute = gson.toJson(route);
+
+                // Формируем запрос
+                CommandRequest commandRequest = new CommandRequest("add", jsonRoute);
+                String jsonRequest = gson.toJson(commandRequest);
+
+                // Отправляем на сервер
+                sendMessage(jsonRequest);
+                break;
+            }
+
+            case "remove_by_key": {
                     RemoveByKey removeByKey = new RemoveByKey();
                     String key = removeByKey.clientExecute(args);
                     CommandRequest removeRequest = new CommandRequest("remove_by_key", key);
@@ -206,7 +235,17 @@ public class NioClient {
                     CommandRequest replaceRequest = new CommandRequest("replace_if_lowe", replaceArg);
                     sendMessage(gson.toJson(replaceRequest));
                     break;
-                case "execute_script":
+                case "update_by_id":
+                    UpdateIdClient updateIdClient = new UpdateIdClient();
+                    String updateJson = updateIdClient.clientExecute(args, provider);
+                    CommandRequest updateRequest = new CommandRequest("update_id", updateJson);
+                    sendMessage(gson.toJson(updateRequest));
+                    break;
+
+
+
+
+            case "execute_script":
                     ExecuteScriptClient execScript = new ExecuteScriptClient();
                     execScript.clientExecute(args);
                     break;
@@ -229,10 +268,19 @@ public class NioClient {
             System.out.println("Добрый вечер!");
             System.out.println("Давайте же начнем это увлекательное и, надеюсь, успешное путешествие в мир моей 5й лабораторной");
             System.out.println("Данные загружены из файла " + filePath);
-            System.out.println("Введите команду");
             System.out.println("P.S. Если Вы не знаете, какую команду ввести, наберите \"help\" ");
 
             while (true) {
+                if (!readyForInput) {
+                    // Ждём, пока сервер ответит
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                    continue;
+                }
                 System.out.print("Введите команду: ");
                 String inputComm = scanner.nextLine().trim();
 
@@ -242,8 +290,9 @@ public class NioClient {
                 String commandName = parts[0];
                 String[] args = Arrays.copyOfRange(parts, 1, parts.length);
                 String argsStr = String.join(" ", args);
-
+                readyForInput = false;
                 if (commandName.equals("execute_script")) {
+
                     if (args.length == 0) {
                         System.out.println("Укажите путь к скрипту после команды execute_script!");
                         continue;
@@ -261,28 +310,33 @@ public class NioClient {
                             String[] cmdArgs = (parts1.length > 1) ? new String[]{parts1[1]} : new String[0];
                             String argsStr1 = String.join(" ", cmdArgs);
 
-                            // ВАЖНО: provider должен быть тем же, что и reader!
+
                             processCommand(cmdName, cmdArgs, argsStr1, provider);
+
                         }
                     } catch (FileNotFoundException ex) {
                         System.err.println("Файл не найден");
+
                     } catch (IOException ex) {
                         System.err.println("Ошибка");
+
                     }
+                    readyForInput = true;
                 }
                 else {
                     KeyboardInputProvider provider = new KeyboardInputProvider();
                     try {
                         processCommand(commandName, args, argsStr, provider);
                     } catch (IOException e) {
-                        System.out.println("Ошибка при выполнении команды: " + e.getMessage());
+                        System.err.println("Ошибка при выполнении команды");
+                        readyForInput = true;
                     }
                 }
 
             }
         } catch (Exception e) {
             System.err.println("Ошибка");
-            e.printStackTrace();
+
         }
     }
 

@@ -54,8 +54,6 @@ public class TcpServer {
                 if (key.isAcceptable()) {
                     acceptClient(key);
                 }
-                // Обработка чтения и записи клиентов делается в ClientHandler
-                // Здесь мы не обрабатываем OP_READ/OP_WRITE, т.к. ClientHandler работает в отдельном потоке
             }
         }
     }

@@ -2,6 +2,8 @@ import Collection.RouteCollectionManager;
 import Commands.CommandProcessor;
 import network.TcpServer;
 
+import static Collection.RouteCollectionManager.globalFilePath;
+
 public class ServerMain {
 
     public static void main(String[] args) {
@@ -11,12 +13,12 @@ public class ServerMain {
             CommandProcessor processor = new CommandProcessor(manager);
             TcpServer server = new TcpServer(processor, 7878);
             Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
-            RouteCollectionManager.init("file.xml");
+            RouteCollectionManager.init(globalFilePath);
             server.start();
 
         } catch (Exception e) {
             System.err.println("Ошибка сервера");
-            e.printStackTrace();
+
         }
     }
 }

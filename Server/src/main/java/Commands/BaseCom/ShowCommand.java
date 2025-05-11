@@ -11,6 +11,7 @@ public class ShowCommand implements Command {
     @Override
     public CommandResponse execute(String args) {
         if (!routeList.isEmpty()) {
+
             StringBuilder sb = new StringBuilder();
             for (Route currentRoute : routeList.values()) {
                 sb.append(currentRoute).append("\n\n");

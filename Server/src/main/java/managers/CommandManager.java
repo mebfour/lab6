@@ -7,6 +7,8 @@ import Commands.*;
 import Commands.BaseCom.InfoCommand;
 import Commands.BaseCom.ShowCommand;
 import Commands.Command;
+import Commands.Elt.MaxByID;
+import Commands.Elt.MinByName;
 import Commands.Modif.AddCommand;
 import Commands.Modif.Clear;
 import Commands.Modif.*;
@@ -33,8 +35,9 @@ public class CommandManager {
         commandList.put("remove_greater", new RemoveGreater());
         commandList.put("remove_lower", new RemoveLower());
         commandList.put("replace_if_lowe", new ReplaceIfLowe(collectionManager));
-//        commandList.put("execute_script", new ExecuteScript());
-
+        commandList.put("update_by_id", new UpdateId(collectionManager));
+        commandList.put("max_by_id", new MaxByID());
+        commandList.put("min_by_name", new MinByName());
     }
     public static CommandResponse checkComm(CommandRequest request) {
         String commandName = request.getCommandName().toLowerCase();

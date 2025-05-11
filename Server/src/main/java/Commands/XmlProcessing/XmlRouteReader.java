@@ -8,6 +8,7 @@ import jakarta.xml.bind.Unmarshaller;
 import java.io.*;
 import java.util.LinkedHashMap;
 
+import static Collection.RouteCollectionManager.globalFilePath;
 
 
 public class XmlRouteReader {
@@ -16,17 +17,23 @@ public class XmlRouteReader {
         try {
             JAXBContext context = JAXBContext.newInstance(RouteWrapper.class, Route.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
-            return (RouteWrapper) unmarshaller.unmarshal(new File(filePath));
+            RouteWrapper wrapper = (RouteWrapper) unmarshaller.unmarshal(new File(filePath));
+
+            if (wrapper.getInitializationTime() != null) {
+                RouteCollectionManager.setInitializationTime(wrapper.getInitializationTime());
+            }
+
+            return wrapper;
         } catch (Exception e) {
 
             System.err.println("Ошибка при чтении из XML");
-            e.printStackTrace();
+
             return new RouteWrapper();
         }
     }
     private static LinkedHashMap<String, Route> readDefaultFile() {
         try {
-            File defaultFile = new File("file.xml");
+            File defaultFile = new File(globalFilePath);
             if (defaultFile.exists()) {
                 try (InputStream is = new FileInputStream(defaultFile)) {
                     JAXBContext context = JAXBContext.newInstance(RouteWrapper.class);
