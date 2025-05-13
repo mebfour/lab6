@@ -25,10 +25,11 @@ public class MaxByID implements Command {
         if (maxRoute == null) {
             return new CommandResponse("Не удалось найти элемент с максимальным id.", false);
         }
+        StringBuilder sb = new StringBuilder();
+        sb.append(maxRoute);
 
-        // Сериализуем объект в JSON для отправки клиенту
-        String json = new Gson().toJson(maxRoute);
-        return new CommandResponse(json, true);
+        return new CommandResponse(sb.toString(), true);
+
     }
 
     @Override

@@ -2,6 +2,7 @@ package InputHandler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class ScriptInputProvider implements InputProvider {
     private final BufferedReader reader;
@@ -81,5 +82,10 @@ public class ScriptInputProvider implements InputProvider {
             //throw new IllegalArgumentException("Плохие значения");
         }
         return -1;
+    }
+
+    @Override
+    public Scanner getScanner() {
+        return new Scanner(reader);
     }
 }

@@ -24,8 +24,10 @@ public class MinByName implements Command {
             return new CommandResponse("Не удалось найти элемент с минимальным name.", false);
         }
 
-        String json = new Gson().toJson(minRoute);
-        return new CommandResponse(json, true);
+        StringBuilder sb = new StringBuilder();
+        sb.append(minRoute);
+
+        return new CommandResponse(sb.toString(), true);
     }
 
     @Override

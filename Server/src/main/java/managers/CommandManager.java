@@ -4,6 +4,7 @@ package managers;
 
 import Collection.RouteCollectionManager;
 import Commands.*;
+import Commands.BaseCom.CheckIdCommand;
 import Commands.BaseCom.InfoCommand;
 import Commands.BaseCom.ShowCommand;
 import Commands.Command;
@@ -38,6 +39,7 @@ public class CommandManager {
         commandList.put("update_by_id", new UpdateId(collectionManager));
         commandList.put("max_by_id", new MaxByID());
         commandList.put("min_by_name", new MinByName());
+        commandList.put("check_id", new CheckIdCommand());
     }
     public static CommandResponse checkComm(CommandRequest request) {
         String commandName = request.getCommandName().toLowerCase();

@@ -28,7 +28,9 @@ public class UpdateIdClient {
                     break;
                 } catch (NumberFormatException e) {
                     System.out.println("id должен быть целым числом. Повторите ввод.");
+                    continue;
                 }
+
             }
         }
 

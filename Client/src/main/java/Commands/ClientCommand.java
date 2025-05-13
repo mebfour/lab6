@@ -1,8 +1,12 @@
 package Commands;
 
-import java.io.IOException;
+import InputHandler.InputProvider;
 
-public interface ClientCommand<T> {
-    T clientExecute(String[] args) throws IOException;
+import java.io.IOException;
+import java.util.Scanner;
+
+public interface ClientCommand {
+    void clientExecute(String[] args, String pars, InputProvider provider, Scanner scanner) throws IOException;
+    String getName();
 }
 

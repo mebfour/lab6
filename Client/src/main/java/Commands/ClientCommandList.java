@@ -1,36 +1,41 @@
 package Commands;
-
-
 import com.google.gson.Gson;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.*;
 
-public class ClientCommandList {
-    private final Map<String, ClientCommand> commandMap = new HashMap<>();
-    private final Gson gson = new Gson();
-    private SocketChannel socketChannel;
-    private Selector selector;
-    private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
+import java.util.function.Consumer;
 
+public class ClientCommandList implements Iterable<ClientCommand> {
+    private final List<ClientCommand> commands;
 
+    private ClientCommandList(List<ClientCommand> commands) {
+        this.commands = commands;
+    }
 
-    public void execute(String commandName, String[] args) throws IOException {
-        ClientCommand command = commandMap.get(commandName.toLowerCase());
-        if (command != null) {
-            command.clientExecute(args);
-        } else {
-            System.out.println("Неизвестная команда: " + commandName);
-        }
+    public static ClientCommandList create(SocketChannel socketChannel,
+                                           Gson gson,
+                                           Consumer<String> sendMessage,
+                                           IdChecker idChecker
+                                           ) {
+
+        List<ClientCommand> commands = List.of(
+                new ExitCommand(socketChannel),
+                new AddCommand(gson, sendMessage),
+                new InsertWithKeyCommand(gson, sendMessage),
+                new RemoveByKeyCommand(gson, sendMessage),
+                new RemoveGreaterCommand(gson, sendMessage),
+                new RemoveLowerCommand(gson, sendMessage),
+                new ReplaceIfLoweCommand(gson, sendMessage),
+                new UpdateIdCommand(gson, sendMessage, idChecker),
+                new ExecuteScriptCommand(gson, sendMessage, new ArrayList<>(), new HashSet<>())
+        );
+
+        return new ClientCommandList(commands);
     }
 
 
-
-
+    @Override
+    public Iterator<ClientCommand> iterator() {
+        return commands.iterator();
+    }
 }
-

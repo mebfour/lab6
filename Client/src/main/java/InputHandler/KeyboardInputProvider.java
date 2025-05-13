@@ -4,9 +4,13 @@ import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class KeyboardInputProvider implements InputProvider {
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
 
-    public KeyboardInputProvider() {}
+    public KeyboardInputProvider(Scanner scanner) {this.scanner = scanner;}
+
+    public Scanner getScanner() {
+        return scanner;
+    }
 
     @Override
     public String readString(String prompt) {

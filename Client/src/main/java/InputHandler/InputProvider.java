@@ -1,5 +1,7 @@
 package InputHandler;
 
+import java.util.Scanner;
+
 public interface InputProvider {
 
     String readString(String prompt);
@@ -7,6 +9,7 @@ public interface InputProvider {
     long readLong(String prompt, long minValue);
     float readFloat(String prompt);
     double readDouble(String prompt, int minValue);
+    Scanner getScanner();
 }
 
 
