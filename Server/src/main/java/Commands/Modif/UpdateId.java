@@ -21,12 +21,12 @@ public class UpdateId implements Command {
     @Override
     public CommandResponse execute(String jsonArgs) {
         try {
-            System.out.println("мы тутъ");
-            // 1. Десериализация объекта с новыми данными и id
+
+            // Десериализация объекта с новыми данными и id
             Route updatedRoute = gson.fromJson(jsonArgs, Route.class);
             int id = updatedRoute.getId();
             boolean findId = false;
-            // 2. Поиск ключа по id
+
             String key = null;
             for (Map.Entry<String, Route> entry : routeList.entrySet()) {
                 if (entry.getValue().getId() == id) {
@@ -39,14 +39,12 @@ public class UpdateId implements Command {
                 return new CommandResponse("Элемент с таким id не найден.", false);
             }
 
-            // 3. Обновление объекта (сохраняем ключ, обновляем остальные поля)
+
             updatedRoute.setKey(key);
-            routeList.put(key, updatedRoute);
+            collectionManager.addToCollection(updatedRoute);
 
-            // 4. Сохраняем коллекцию
+
             collectionManager.saveToFile();
-
-            // 5. Ответ клиенту
             return new CommandResponse("Элемент успешно обновлён.", true);
 
         } catch (Exception e) {
@@ -57,7 +55,7 @@ public class UpdateId implements Command {
 
 @Override
 public String getName() {
-    return "update_by_id";
+    return "update_id";
 }
 
 @Override

@@ -17,8 +17,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
-
-
 public class IdoIt {
     private volatile CommandResponse lastResponse = null;
     private volatile boolean readyForInput = true;
@@ -43,14 +41,10 @@ public class IdoIt {
         };
     }
 
-
-
     public static void main(String[] args) throws IOException {
         new IdoIt().start("localhost", 7878);
 
     }
-
-
 
     private void sendMessage(String jsonRequest) throws IOException {
         byte[] data = jsonRequest.getBytes();
@@ -89,7 +83,7 @@ public class IdoIt {
             return lastResponse != null && lastResponse.isSuccess();
 
         } catch (Exception e) {
-            System.err.println("Ошибка при проверке id на сервере: " + e.getMessage());
+            System.err.println("Ошибка при проверке id на сервере");
             return false;
         }
     }
@@ -242,7 +236,7 @@ public class IdoIt {
         sc.close();
         System.exit(0);
     }
-    // Не готов
+
     public void start(String host, int port) throws IOException {
         try {
             /**

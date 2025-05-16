@@ -1,0 +1,13 @@
+add
+name
+3
+4 
+mesto1
+4
+5
+6
+mesto2
+6
+8
+9
+show

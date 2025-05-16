@@ -36,7 +36,7 @@ public class CommandManager {
         commandList.put("remove_greater", new RemoveGreater());
         commandList.put("remove_lower", new RemoveLower());
         commandList.put("replace_if_lowe", new ReplaceIfLowe(collectionManager));
-        commandList.put("update_by_id", new UpdateId(collectionManager));
+        commandList.put("update_id", new UpdateId(collectionManager));
         commandList.put("max_by_id", new MaxByID());
         commandList.put("min_by_name", new MinByName());
         commandList.put("check_id", new CheckIdCommand());
@@ -45,8 +45,10 @@ public class CommandManager {
         String commandName = request.getCommandName().toLowerCase();
 
         Command command = commandList.get(commandName);
+        System.out.println("вывод раз "+commandList.get(commandName));
         if (command != null) {
-
+            System.out.println("удали еще костл");
+            System.out.println(request.getArgs());
             return command.execute(request.getArgs());
         } else {
             return new CommandResponse("Такой команды нет, давайте попробуем другой набор символов", false);

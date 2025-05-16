@@ -30,7 +30,7 @@ public class UpdateIdCommand implements ClientCommand {
         // Если id передан в аргументах команды
         if (args.length > 0) {
             try {
-                id = Integer.parseInt(args[0]);
+                id = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
                 System.out.println("id должен быть целым числом.");
             }

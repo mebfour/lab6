@@ -28,7 +28,6 @@ public class AddCommand implements Command {
 
             return new CommandResponse("Маршрут успешно добавлен!", true);
         } catch (Exception e) {
-            e.printStackTrace();
             return new CommandResponse("Ошибка добавления маршрута", false);
         }
     }

@@ -171,7 +171,8 @@ public class NioClient {
             return lastResponse != null && lastResponse.isSuccess();
 
         } catch (Exception e) {
-            System.err.println("Ошибка при проверке id на сервере: " + e.getMessage());
+            System.err.println("Ошибка1 при проверке id на сервере");
+
             return false;
         }
     }
