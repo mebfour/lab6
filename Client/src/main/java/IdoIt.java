@@ -272,7 +272,7 @@ public class IdoIt {
             // Создаем и запускаем поток для пользовательского ввода
             Thread inputThread = new Thread(() -> {
                 try {
-                    consoleInputLoop("default_file_path", new Scanner(System.in));
+                    consoleInputLoop("default_file_path", scanner);
                 } catch (Exception e) {
                     System.err.println("Ошибка в цикле ввода");
                 }

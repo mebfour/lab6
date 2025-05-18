@@ -40,14 +40,13 @@ public class CommandManager {
         commandList.put("max_by_id", new MaxByID());
         commandList.put("min_by_name", new MinByName());
         commandList.put("check_id", new CheckIdCommand());
+
     }
     public static CommandResponse checkComm(CommandRequest request) {
         String commandName = request.getCommandName().toLowerCase();
 
         Command command = commandList.get(commandName);
-        System.out.println("вывод раз "+commandList.get(commandName));
         if (command != null) {
-            System.out.println("удали еще костл");
             System.out.println(request.getArgs());
             return command.execute(request.getArgs());
         } else {

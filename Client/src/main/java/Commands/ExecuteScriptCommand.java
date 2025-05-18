@@ -43,6 +43,7 @@ public class ExecuteScriptCommand implements ClientCommand {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                System.out.println("мы тут");
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("#")) continue;
 
