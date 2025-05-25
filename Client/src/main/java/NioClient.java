@@ -34,7 +34,7 @@ public class NioClient {
             socketChannel.connect(new InetSocketAddress(host, port));
             socketChannel.register(selector, SelectionKey.OP_CONNECT);
 
-            new Thread(() -> consoleInputLoop("D:\\itmo\\jaba\\lab6\\Server\\target\\file.xml")).start();
+            new Thread(() -> consoleInputLoop("file.xml")).start();
 
 
             while (true) {

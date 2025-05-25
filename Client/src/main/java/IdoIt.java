@@ -1,6 +1,6 @@
 import Commands.ClientCommand;
 import Commands.ClientCommandList;
-import Commands.IdChecker;
+import Commands.ExecuteScriptClient;
 import InputHandler.InputProvider;
 import InputHandler.KeyboardInputProvider;
 import ToStart.CommandRequest;
@@ -20,14 +20,13 @@ import java.util.function.Consumer;
 public class IdoIt {
     private volatile CommandResponse lastResponse = null;
     private volatile boolean readyForInput = true;
-    private SocketChannel socketChannel;
-    private Selector selector;
+    private SocketChannel socketChannel;    //  Каждый SocketChannel, зарегистрированный в Selector, имеет связанный объект SelectionKey
+    private Selector selector;      //  позволяет одному потоку ожидать событий на множестве открытых каналов.
     private  final Gson gson = new Gson();
     private final Scanner scanner = new Scanner(System.in);
     private final ByteBuffer readLengthBuffer = ByteBuffer.allocate(4); // для чтения длины
     private ByteBuffer readDataBuffer = null; // для чтения данных сообщения
     private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
-    IdChecker idChecker = this::checkIdOnServer;
     private final Consumer<String> sendMessage;
 
 
@@ -47,22 +46,21 @@ public class IdoIt {
     }
 
     private void sendMessage(String jsonRequest) throws IOException {
-        byte[] data = jsonRequest.getBytes();
+        byte[] data = jsonRequest.getBytes();   //преобразует в массив байт
         ByteBuffer buf = ByteBuffer.allocate(4 + data.length);
-        buf.putInt(data.length);
-        buf.put(data);
-        buf.flip();
+        buf.putInt(data.length); // записываем длину данных
+        buf.put(data);           // записываем сами данные
+        buf.flip();              // готовим буфер к чтению
 
-        writeQueue.add(buf);
+        writeQueue.add(buf);      // добавляем буфер в очередь на отправку
 
         SelectionKey key = socketChannel.keyFor(selector);
         if (key != null) {
-            key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
-            selector.wakeup();
+            key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ); // говорим, что хотим писать и читать
+            selector.wakeup(); // "будим" селектор, чтобы он обработал интересующие нас события
         }
     }
 
-    // Готово и не проверено
     public boolean checkIdOnServer(int id) {
         try {
             CommandRequest checkIdRequest = new CommandRequest("check_id", String.valueOf(id));
@@ -71,15 +69,8 @@ public class IdoIt {
             // Отправляем запрос
             sendMessage.accept(jsonRequest);
 
-            CommandResponse[] responseHolder = new CommandResponse[1];
-
 
             readyForInput = false;
-            while (!readyForInput) {
-                Thread.sleep(10);
-            }
-
-
             return lastResponse != null && lastResponse.isSuccess();
 
         } catch (Exception e) {
@@ -136,9 +127,15 @@ public class IdoIt {
 
                     readyForInput = false;
 
+                    if (commandName.equalsIgnoreCase("execute_script")) {
+                        ExecuteScriptClient execScript = new ExecuteScriptClient();
+                        execScript.clientExecute(args.split(" "));
+                        CommandRequest replaceRequest = new CommandRequest("execute_script", args);
+                        sendMessage(gson.toJson(replaceRequest));
 
-
-                    ClientCommandList commandList = ClientCommandList.create(socketChannel,gson, sendMessage, idChecker);
+                        break;
+                    }
+                    ClientCommandList commandList = ClientCommandList.create(socketChannel,gson, sendMessage, this::checkIdOnServer);
                     try {
                         processCommand(parts, provider, scanner, commandList, sendMessage);
                     } catch (IOException e) {
