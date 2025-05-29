@@ -23,7 +23,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>IdoIt</mainClass>
+                  <mainClass>Client</mainClass>
                 </transformer>
               </transformers>
             </configuration>

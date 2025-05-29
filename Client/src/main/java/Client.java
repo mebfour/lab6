@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
-public class IdoIt {
+public class Client {
     private volatile CommandResponse lastResponse = null;
     private volatile boolean readyForInput = true;
     private SocketChannel socketChannel;    //  Каждый SocketChannel, зарегистрированный в Selector, имеет связанный объект SelectionKey
@@ -30,7 +30,7 @@ public class IdoIt {
     private final Consumer<String> sendMessage;
 
 
-    public IdoIt() {
+    public Client() {
         this.sendMessage = json -> {
             try {
                 sendMessage(json);
@@ -41,7 +41,7 @@ public class IdoIt {
     }
 
     public static void main(String[] args) throws IOException {
-        new IdoIt().start("localhost", 7878);
+        new Client().start("localhost", 7878);
 
     }
 
