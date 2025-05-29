@@ -38,6 +38,7 @@ public class RemoveGreater implements Command {
         while (it.hasNext()) {
             Map.Entry<String, Route> entry = it.next();
             if (foundKey) {
+                collectionManager.removeConcrFromBD(entry.getValue().getKey());
                 it.remove();
                 removedCount++;
                 done = true;

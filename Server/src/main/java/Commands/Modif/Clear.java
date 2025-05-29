@@ -12,6 +12,7 @@ public class Clear implements Command {
     @Override
     public CommandResponse execute(String args) {
         routeList.clear();
+        collectionManager.clearToBD();
         collectionManager.saveToFile();
         return new CommandResponse("Коллекция очищена успешно!", true);
     }

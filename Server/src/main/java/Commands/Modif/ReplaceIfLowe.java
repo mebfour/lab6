@@ -43,8 +43,10 @@ public class ReplaceIfLowe implements Command {
 
         // Сравниваем строки-ключи лексикографически
         if (newKey.compareTo(routeToModify.getKey()) < 0) {
+
             routeToModify.setKey(newKey);
             // Обновляем ключ в самой коллекции
+            collectionManager.updateToBD(routeToModify);
             routeList.remove(targetKey);
             routeList.put(newKey, routeToModify);
             collectionManager.saveToFile();

@@ -20,6 +20,7 @@ public class RemoveByKey implements Command {
         }
 
         if (collectionManager.getCollection().containsKey(key)) {
+            collectionManager.removeConcrFromBD(key);
             collectionManager.getCollection().remove(key);
             collectionManager.saveToFile(); // сохраняем изменения
             return new CommandResponse("Элемент с ключом " + key + " успешно удалён.", true);

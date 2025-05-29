@@ -41,6 +41,9 @@ public class UpdateId implements Command {
 
 
             updatedRoute.setKey(key);
+
+            collectionManager.updateToBD(updatedRoute);
+
             collectionManager.addToCollection(updatedRoute);
 
 
