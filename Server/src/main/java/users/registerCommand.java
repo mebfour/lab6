@@ -12,7 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.Map;
 
-public class registerCommand implements Command {
+public class RegisterCommand implements Command {
     final Gson gson = new Gson();
 
     @Override

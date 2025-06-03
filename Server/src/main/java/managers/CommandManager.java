@@ -15,7 +15,8 @@ import Commands.Modif.Clear;
 import Commands.Modif.*;
 import Commands.Ordin.ExitCommand;
 import Commands.Ordin.HelpCommand;
-import users.registerCommand;
+import users.LoginCommand;
+import users.RegisterCommand;
 
 
 import java.util.HashMap;
@@ -41,7 +42,8 @@ public class CommandManager {
         commandList.put("max_by_id", new MaxByID());
         commandList.put("min_by_name", new MinByName());
         commandList.put("check_id", new CheckIdCommand());
-        commandList.put("register", new registerCommand());
+        commandList.put("register", new RegisterCommand());
+        commandList.put("login", new LoginCommand());
 
     }
     public static CommandResponse checkComm(CommandRequest request) {

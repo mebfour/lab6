@@ -1,6 +1,7 @@
 package Commands;
 
 import InputHandler.InputProvider;
+import ToStart.CommandRequest;
 import com.google.gson.Gson;
 
 import java.io.Console;
@@ -9,50 +10,43 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Consumer;
-import ToStart.CommandRequest;
 
-public class Register implements ClientCommand {
+public class Login implements ClientCommand{
     private final Gson gson;
     private final Consumer<String> sendMessage;
 
-    public Register(Gson gson, Consumer<String> sendMessage) {
+    public Login(Gson gson, Consumer<String> sendMessage) {
         this.gson = gson;
         this.sendMessage = sendMessage;
     }
 
-
     @Override
     public void clientExecute(String[] args, String pars, InputProvider provider, Scanner scanner) throws IOException {
-        // Считываем логин
         System.out.print("Введите логин: ");
         String username = scanner.nextLine().trim();
 
         // Считываем пароль скрытым вводом
         String password;
 
-        // Получаем консоль
         Console console = System.console();
-
         if (console != null) {
-            // Скрытый ввод пароля
             char[] passwordChars = console.readPassword("Введите пароль: ");
             password = new String(passwordChars);
         } else {
-            // Если консоль недоступна, вводим пароль обычным способом
             System.out.print("Введите пароль: ");
             password = scanner.nextLine();
         }
 
-        // Формируем объект с параметрами регистрации
+        // Формируем параметры в Map
         Map<String, String> params = new HashMap<>();
         params.put("username", username);
         params.put("password", password);
 
-        // Преобразуем параметры в JSON
+        // Сериализуем параметры в JSON
         String jsonParams = gson.toJson(params);
 
-        // Создаём запрос с командой "register" и параметрами
-        CommandRequest commandRequest = new CommandRequest("register", jsonParams);
+        // Создаём объект запроса с командой "login"
+        CommandRequest commandRequest = new CommandRequest("login", jsonParams);
 
         // Сериализуем запрос в JSON
         String jsonRequest = gson.toJson(commandRequest);
@@ -61,8 +55,9 @@ public class Register implements ClientCommand {
         sendMessage.accept(jsonRequest);
     }
 
+
     @Override
     public String getName() {
-        return "register";
+        return "login";
     }
 }

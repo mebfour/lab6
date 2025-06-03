@@ -20,7 +20,7 @@ public class ClientCommandList implements Iterable<ClientCommand> {
 
         List<ClientCommand> commands = List.of(
                 new ExitCommand(socketChannel),
-                new register(gson, sendMessage),
+                new Register(gson, sendMessage),
                 new AddCommand(gson, sendMessage),
                 new InsertWithKeyCommand(gson, sendMessage),
                 new RemoveByKeyCommand(gson, sendMessage),
@@ -28,7 +28,8 @@ public class ClientCommandList implements Iterable<ClientCommand> {
                 new RemoveLowerCommand(gson, sendMessage),
                 new ReplaceIfLoweCommand(gson, sendMessage),
                 new UpdateIdCommand(gson, sendMessage, idChecker),
-                new ExecuteScriptCommand(gson, sendMessage, new ArrayList<>(), new HashSet<>())
+                new ExecuteScriptCommand(gson, sendMessage, new ArrayList<>(), new HashSet<>()),
+                new Login(gson, sendMessage)
         );
 
         return new ClientCommandList(commands);
