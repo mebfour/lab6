@@ -3,9 +3,6 @@ package Collection;
 import Classes.Route;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.sql.*;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -17,7 +14,6 @@ import java.util.LinkedHashMap;
 
 import Commands.XmlProcessing.RouteWrapper;
 import Commands.XmlProcessing.XmlRouteReader;
-import com.google.gson.Gson;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.annotation.XmlElement;

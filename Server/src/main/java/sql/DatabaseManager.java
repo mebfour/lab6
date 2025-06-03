@@ -1,11 +1,6 @@
 package sql;
 
-import Classes.Coordinates;
-import Classes.Location;
-import Classes.Route;
-import Collection.RouteCollectionManager;
 
-import java.sql.*;
 
 public class DatabaseManager {
     static {

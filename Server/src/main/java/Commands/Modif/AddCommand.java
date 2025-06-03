@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 import sql.DataSourceProvider;
 
 import javax.sql.DataSource;
-import java.sql.*;
+
 
 public class AddCommand implements Command {
     private final RouteCollectionManager collectionManager;

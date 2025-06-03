@@ -20,6 +20,7 @@ public class ClientCommandList implements Iterable<ClientCommand> {
 
         List<ClientCommand> commands = List.of(
                 new ExitCommand(socketChannel),
+                new register(gson, sendMessage),
                 new AddCommand(gson, sendMessage),
                 new InsertWithKeyCommand(gson, sendMessage),
                 new RemoveByKeyCommand(gson, sendMessage),
