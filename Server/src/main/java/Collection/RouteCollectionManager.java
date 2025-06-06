@@ -25,7 +25,7 @@ import static managers.CommandManager.collectionManager;
 @XmlRootElement(name = "routeList")
 public class RouteCollectionManager {
     public static String globalFilePath = "file.xml";
-    public static LinkedHashMap<String, Route> routeList = XmlRouteReader.readRoutesFromXml(globalFilePath).getRouteMap();
+    public static LinkedHashMap<String, Route> routeList = XmlRouteReader.readRoutesFromBd(globalFilePath).getRouteMap();
     private static Date initializationTime = new Date();
     private int currentMaxId = (int) routeList.values().stream()
                 .mapToLong(Route::getId)
@@ -37,7 +37,7 @@ public class RouteCollectionManager {
 
     public static void init(String path) {
         globalFilePath = path;
-        routeList = XmlRouteReader.readRoutesFromXml(globalFilePath).getRouteMap();
+        routeList = XmlRouteReader.readRoutesFromBd(globalFilePath).getRouteMap();
 
     }
 

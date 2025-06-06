@@ -7,6 +7,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
+
 import Classes.Route;
 
 import static Collection.RouteCollectionManager.routeList;
@@ -17,7 +19,7 @@ import static Collection.RouteCollectionManager.routeList;
 public class RouteWrapper {
     private Date initializationTime;
     private LinkedHashMap<String, Route> routeMap = routeList;
-
+    private List<Route> routes;
     @XmlElement(name = "initializationTime")
     public Date getInitializationTime() {
         return initializationTime;
@@ -34,7 +36,6 @@ public class RouteWrapper {
     public void setRouteMap(LinkedHashMap<String, Route> routeMap) {
         this.routeMap = routeMap;
     }
-
 
     // Конструктор по умолчанию (обязателен для JAXB)
     public RouteWrapper() {

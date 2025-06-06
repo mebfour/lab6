@@ -4,10 +4,12 @@ import Classes.Route;
 import Collection.RouteCollectionManager;
 import Commands.Command;
 import Commands.CommandResponse;
+import InputHandler.RouteRequest;
 import com.google.gson.Gson;
 import sql.DataSourceProvider;
-
 import javax.sql.DataSource;
+
+import static InputHandler.RouteRequest.isAuthorized;
 
 
 public class AddCommand implements Command {
@@ -24,10 +26,26 @@ public class AddCommand implements Command {
         }
 
         try {
-            // Десериализуем объект Route из jsonArgs (например, через Gson)
-            Route route = gson.fromJson(jsonArgs, Route.class);
+            RouteRequest request = gson.fromJson(jsonArgs, RouteRequest.class);
+
+            String username = request.getUsername();
+            String password = request.getPassword();
+            Route route = request.getRoute();
+
+            if (username == null || password == null || username.isBlank() || password.isBlank()) {
+                return new CommandResponse("Требуется авторизация: логин и пароль обязательны", false);
+            }
+
+            if (!isAuthorized(username, password)) {
+                return new CommandResponse("Авторизация не пройдена: неверный логин или пароль", false);
+            }
+
+
             int id = (int) collectionManager.generateNextId();
             route.setId(id);
+
+            // Устанавливаем владельца объекта
+            route.setOwner(username); // Добавьте поле owner в Route
 
 
             // После добавления - сохранить коллекцию в файл

@@ -15,11 +15,12 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class Client {
     private volatile CommandResponse lastResponse = null;
-    private volatile boolean readyForInput = true;
     private SocketChannel socketChannel;    //  Каждый SocketChannel, зарегистрированный в Selector, имеет связанный объект SelectionKey
     private Selector selector;      //  позволяет одному потоку ожидать событий на множестве открытых каналов.
     private  final Gson gson = new Gson();
@@ -28,7 +29,12 @@ public class Client {
     private ByteBuffer readDataBuffer = null; // для чтения данных сообщения
     private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
     private final Consumer<String> sendMessage;
+    private boolean isAuthorized;
+    private CountDownLatch responseLatch;
 
+
+
+    public void setIsAuthorized(boolean isAuthorized) {this.isAuthorized = isAuthorized;}
 
     public Client() {
         this.sendMessage = json -> {
@@ -70,7 +76,7 @@ public class Client {
             sendMessage.accept(jsonRequest);
 
 
-            readyForInput = false;
+
             return lastResponse != null && lastResponse.isSuccess();
 
         } catch (Exception e) {
@@ -102,55 +108,94 @@ public class Client {
 
 
     // Готово и не проверено
-    public void consoleInputLoop(String filePath, Scanner scanner) {
+    public void consoleInputLoop(Scanner scanner) {
         KeyboardInputProvider provider = new KeyboardInputProvider(scanner);
+        isAuthorized = false;
+
+
         try {
             System.out.println("Добрый вечер!");
-            System.out.println("Давайте же начнем это увлекательное и, надеюсь, успешное путешествие в мир моей 5й лабораторной");
-            System.out.println("Данные загружены из файла " + filePath);
-            System.out.println("P.S. Если Вы не знаете, какую команду ввести, наберите \"help\" ");
+            System.out.println("Давайте же начнем это увлекательное и, надеюсь, успешное путешествие в мир моей 7й лабораторной");
+            System.out.println("Для начала работы необходимо войти (login) или зарегистрироваться (register)");
 
-            while (true) {
-                if (readyForInput) {
-                    System.out.print("Введите команду: ");
-                    String inputData = scanner.nextLine().trim();
+            while (!isAuthorized) {
+                System.out.println(" Введите login/register: ");
+                String inputData = scanner.nextLine().trim();
+                if (inputData.isEmpty()) continue;
 
-                    if (inputData.isEmpty()) continue;
-                    String[] parts = inputData.split(" ");
-                    String commandName = parts[0];
-                    /**
-                     * Arrays.asList(parts) — превращает массив в список.
-                     * .subList(1, parts.length) — берёт подсписок, начиная с индекса 1 до конца.
-                     * String.join(" ", ...) — соединяет элементы списка через пробел.
-                     */
-                    String args = String.join(" ", Arrays.asList(parts).subList(1, parts.length));
+                String[] parts = inputData.split(" ");
+                String command = parts[0].toLowerCase();
 
-                    readyForInput = false;
+                if (!command.equals("login") && !command.equals("register")) {
+                    System.out.println("Ошибка: сначала необходимо выполнить вход (login) или регистрацию (register).");
+                    continue;
+                }
+                ClientCommandList commandList = ClientCommandList.create(socketChannel, gson, sendMessage, this::checkIdOnServer);
 
-                    if (commandName.equalsIgnoreCase("execute_script")) {
-                        ExecuteScriptClient execScript = new ExecuteScriptClient();
-                        execScript.clientExecute(args.split(" "));
-                        CommandRequest replaceRequest = new CommandRequest("execute_script", args);
-                        sendMessage(gson.toJson(replaceRequest));
+                try {
+                    responseLatch = new CountDownLatch(1);  //пытаюсь засинхронить ответ
+                    processCommand(parts, provider, scanner, commandList, sendMessage);
+                    if (!responseLatch.await(10, TimeUnit.SECONDS)){
+                        System.out.println("Сервер долго молчит нынче...");
+                        return;
+                    }
 
+
+                    if (lastResponse != null && lastResponse.isSuccess()) {
+                        System.out.println("Авторизация прошла успешно.");
+                        isAuthorized = true;
                         break;
+                    } else {
+                        System.out.println("Авторизация не удалась. Попробуйте снова.");
+                        continue;
                     }
-                    ClientCommandList commandList = ClientCommandList.create(socketChannel,gson, sendMessage, this::checkIdOnServer);
-                    try {
-                        processCommand(parts, provider, scanner, commandList, sendMessage);
-                    } catch (IOException e) {
-                        System.err.println("Ошибка при выполнении команды");
-                        // Можно разблокировать ввод только если команда не была отправлена
-                        readyForInput = true;
-                    }
+                } catch (IOException e) {
+                    // удали
+                    System.err.println("Ошибка при выполнении команды авторизации: " + e.getMessage());
                 }
             }
+
+            System.out.println("Вы вошли в систему. Теперь доступны все команды.");
+            System.out.println("Если Вы не знаете, какую команду ввести, наберите \"help\" ");
+            while (true) {
+
+                System.out.print("Введите команду: ");
+                String inputData = scanner.nextLine().trim();
+
+                if (inputData.isEmpty()) continue;
+                String[] parts = inputData.split(" ");
+                String commandName = parts[0];
+
+                String args = String.join(" ", Arrays.asList(parts).subList(1, parts.length));
+
+
+
+                if (commandName.equalsIgnoreCase("execute_script")) {
+                    ExecuteScriptClient execScript = new ExecuteScriptClient();
+                    execScript.clientExecute(args.split(" "));
+                    CommandRequest replaceRequest = new CommandRequest("execute_script", args);
+                    sendMessage(gson.toJson(replaceRequest));
+
+                    break;
+                }
+                ClientCommandList commandList = ClientCommandList.create(socketChannel,gson, sendMessage, this::checkIdOnServer);
+                try {
+                    processCommand(parts, provider, scanner, commandList, sendMessage);
+                } catch (IOException e) {
+                    System.err.println("Ошибка при выполнении команды");
+                    // Можно разблокировать ввод только если команда не была отправлена
+
+                }
+            }
+
         } catch (NoSuchElementException e) {
             System.err.println("Ошибка: неожидаемое завершение входного потока. Возможно, была нажата комбинация Ctrl+D или Ctrl+Z.");
         } catch (IllegalStateException e) {
             System.err.println("Ошибка: некорректное состояние программы. Попробуйте перезапустить приложение.");
         }
         catch (Exception e) {
+            //удали
+            e.printStackTrace();
             System.err.println("Ошибка!");
         }
 
@@ -203,7 +248,10 @@ public class Client {
             readDataBuffer = null; // готовимся к следующему сообщению
 
             this.lastResponse = response;
-            readyForInput = true;
+
+            if (responseLatch != null) {
+                responseLatch.countDown();
+            }
         }
 
     }
@@ -269,7 +317,7 @@ public class Client {
             // Создаем и запускаем поток для пользовательского ввода
             Thread inputThread = new Thread(() -> {
                 try {
-                    consoleInputLoop("default_file_path", scanner);
+                    consoleInputLoop(scanner);
                 } catch (Exception e) {
                     System.err.println("Ошибка в цикле ввода");
                 }
@@ -292,9 +340,11 @@ public class Client {
                     }
                     if (key.isReadable()) {
                         readFromServer(key);
+
                     }
                     if (key.isWritable()) {
                         writeToServer(key);
+
                     }
                 }
             }

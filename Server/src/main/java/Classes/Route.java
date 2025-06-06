@@ -15,7 +15,7 @@ public class Route {
     private int id; //Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     private String name; //Поле не может быть null, Строка не может быть пустой
     private Coordinates coordinates; //Поле не может быть null
-
+    private String owner;
     private Date creationDate; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
     private Location from; //Поле не может быть null
     private Location to; //Поле может быть null
@@ -99,6 +99,9 @@ public class Route {
     public Double getDistance() {
         return distance;
     }
+    @XmlElement(name="owner")
+    public String getOwner(){return owner;}
+    public void setOwner(String owner){this.owner = owner;}
 
     public void setDistance(Double distance) {
         this.distance = distance;
@@ -129,6 +132,7 @@ public class Route {
         info += '\n'+"Добавлен "+date.substring(0, 10)+" "+date.substring(11, 19)+'\n';
         info += "\n Куда " + to;
         info += "\n Откуда " + from;
+        info += "\n Создал " + owner;
         info += "\n id: " + id+ '\n' + "=========================================";;
         return info;
     }
