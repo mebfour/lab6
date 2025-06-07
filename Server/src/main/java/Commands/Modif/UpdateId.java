@@ -18,11 +18,9 @@ public class UpdateId implements Command {
         this.collectionManager = collectionManager;
     }
 
-
     @Override
     public CommandResponse execute(String jsonArgs) {
         try {
-
             // Десериализация объекта с новыми данными и id
             Route updatedRoute = gson.fromJson(jsonArgs, Route.class);
             int id = updatedRoute.getId();
@@ -46,11 +44,7 @@ public class UpdateId implements Command {
                 updatedRoute.setKey(key);
 
                 collectionManager.updateToBD(updatedRoute);
-
                 collectionManager.addToCollection(updatedRoute);
-
-
-                // collectionManager.saveToFile();
                 return new CommandResponse("Элемент успешно обновлён.", true);
             }else {
                 return new CommandResponse("Ошибка доступа: объект Вам не принадлежит", false);

@@ -24,12 +24,9 @@ public class AddCommand implements ClientCommand {
     public void clientExecute(String[] args, String pars, InputProvider provider, Scanner scanner) throws IOException {
         Route route = new Route();
         route = inputObject.inputObject(route, provider);
-
         String jsonRoute = gson.toJson(route);
-
         CommandRequest commandRequest = new CommandRequest("add", jsonRoute, currentUsername);
         String jsonRequest = gson.toJson(commandRequest);
-
         sendMessage.accept(jsonRequest);
     }
 
@@ -37,6 +34,4 @@ public class AddCommand implements ClientCommand {
     public String getName() {
         return "add";
     }
-
-
 }

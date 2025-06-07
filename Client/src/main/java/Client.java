@@ -36,8 +36,6 @@ public class Client {
 
 
 
-    public void setIsAuthorized(boolean isAuthorized) {this.isAuthorized = isAuthorized;}
-
     public Client() {
         this.sendMessage = json -> {
             try {
@@ -73,23 +71,16 @@ public class Client {
         try {
             CommandRequest checkIdRequest = new CommandRequest("check_id", String.valueOf(id), currentUsername);
             String jsonRequest = gson.toJson(checkIdRequest);
-
             // Отправляем запрос
-            sendMessage.accept(jsonRequest);
-
-
-
+            responseLatch = new CountDownLatch(1);
+            sendMessage.accept(jsonRequest); // отправляем запрос
+            responseLatch.await(); // ждём ответа
             return lastResponse != null && lastResponse.isSuccess();
-
         } catch (Exception e) {
             System.err.println("Ошибка при проверке id на сервере");
             return false;
         }
     }
-
-
-
-    // Вроде готово и не проверено
     public void processCommand(String[] inp, InputProvider provider, Scanner scanner, ClientCommandList clientCommandList, Consumer<String> sendMessage) throws IOException  {
         String args = String.join(" ", Arrays.asList(inp).subList(1, inp.length));
         for (ClientCommand command : clientCommandList) {
@@ -141,37 +132,25 @@ public class Client {
                         System.out.println("Сервер долго молчит нынче...");
                         return;
                     }
-
-
                     if (lastResponse != null && lastResponse.isSuccess()) {
-                        //System.out.println("Авторизация прошла успешно.");
                         isAuthorized = true;
                         break;
-                    } else {
-                        System.out.println("Авторизация не удалась. Попробуйте снова.");
-                        continue;
                     }
                 } catch (IOException e) {
-                    // удали
-                    System.err.println("Ошибка при выполнении команды авторизации: " + e.getMessage());
+                    System.err.println("Ошибка при выполнении команды авторизации");
                 }
             }
 
             System.out.println("Вы вошли в систему. Теперь доступны все команды.");
             System.out.println("Если Вы не знаете, какую команду ввести, наберите \"help\" ");
+            System.out.println("Введите команду: ");
             while (true) {
 
-                System.out.print("Введите команду: ");
                 String inputData = scanner.nextLine().trim();
-
                 if (inputData.isEmpty()) continue;
                 String[] parts = inputData.split(" ");
                 String commandName = parts[0];
-
                 String args = String.join(" ", Arrays.asList(parts).subList(1, parts.length));
-
-
-
                 if (commandName.equalsIgnoreCase("execute_script")) {
                     ExecuteScriptClient execScript = new ExecuteScriptClient();
                     execScript.clientExecute(args.split(" "));
@@ -180,6 +159,8 @@ public class Client {
 
                     break;
                 }
+
+
                 ClientCommandList commandList = ClientCommandList.create(socketChannel,gson, sendMessage, this::checkIdOnServer);
                 try {
                     processCommand(parts, provider, scanner, commandList, sendMessage);
@@ -196,9 +177,7 @@ public class Client {
             System.err.println("Ошибка: некорректное состояние программы. Попробуйте перезапустить приложение.");
         }
         catch (Exception e) {
-            //удали
-            e.printStackTrace();
-            System.err.println("Ошибка!");
+            System.err.println("Ошибка при работе программы");
         }
 
     }
@@ -247,6 +226,9 @@ public class Client {
             CommandResponse response = gson.fromJson(jsonResponse, CommandResponse.class);
 
             System.out.println(response.getMessage());
+            if (isAuthorized && (!response.getMessage().equals("Id найден"))) {
+                System.out.print("Введите команду: ");
+            }
             readDataBuffer = null; // готовимся к следующему сообщению
 
             this.lastResponse = response;

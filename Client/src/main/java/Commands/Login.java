@@ -2,7 +2,6 @@ package Commands;
 
 import InputHandler.InputProvider;
 import ToStart.CommandRequest;
-import ToStart.UserSession;
 import com.google.gson.Gson;
 
 import java.io.Console;

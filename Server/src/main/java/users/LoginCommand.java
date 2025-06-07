@@ -39,7 +39,7 @@ public class LoginCommand implements Command {
                     }
                     String storedHash = rs.getString("password_hash");
                     String providedHash = PasswordUtil.hashPassword(password);
-
+                    System.out.println(providedHash);
                     if (storedHash.equals(providedHash)) {
                         return new CommandResponse("Авторизация успешна", true);
                     } else {
@@ -48,9 +48,8 @@ public class LoginCommand implements Command {
                 }
             }
         } catch (SQLException | NoSuchAlgorithmException e) {
-            // удали
-            e.printStackTrace();
-            return new CommandResponse("Ошибка при авторизации: " + e.getMessage(), false);
+
+            return new CommandResponse("Ошибка при авторизации", false);
         }
     }
 

@@ -14,17 +14,15 @@ import java.util.Map;
  */
 
 import Commands.BDProcessing.BDReader;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
+
 import sql.DataSourceProvider;
 
 import static managers.CommandManager.collectionManager;
 
-@XmlRootElement(name = "routeList")
+
 public class RouteCollectionManager {
-    public static String globalFilePath = "file.xml";
     public static Map<String, Route> routeList = Collections.synchronizedMap( new LinkedHashMap<>(
-            BDReader.readRoutesFromBd(globalFilePath).getRouteMap()) );
+            BDReader.readRoutesFromBd().getRouteMap()) );
 
     private static Date initializationTime = new Date();
     private int currentMaxId = (int) routeList.values().stream()
@@ -35,9 +33,9 @@ public class RouteCollectionManager {
         return ++currentMaxId;
     }
 
-    public static void init(String path) {
-        globalFilePath = path;
-        routeList = BDReader.readRoutesFromBd(globalFilePath).getRouteMap();
+    public static void init() {
+
+        routeList = BDReader.readRoutesFromBd().getRouteMap();
 
     }
 
@@ -65,7 +63,6 @@ public class RouteCollectionManager {
         return routeList.getClass();
     }
 
-    @XmlElement(name="route")
     public Map getCollection() {
         return routeList;
     }

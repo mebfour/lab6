@@ -38,8 +38,7 @@ public class RemoveByKey implements Command {
                 return new CommandResponse("Элемент с ключом " + key + " не найден.", false);
             }
         }catch (Exception e) {
-            //удали
-            e.printStackTrace();
+            System.out.println("Ошибка удаления элемента");
         }
         return null;
     }

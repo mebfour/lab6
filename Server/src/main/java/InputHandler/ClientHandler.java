@@ -15,7 +15,6 @@ import java.util.Queue;
 
 public class ClientHandler implements Runnable {
     private final SocketChannel socketChannel;
-    private final CommandProcessor processor;
     private final Gson gson = new Gson();
 
     // Буферы для чтения
@@ -25,9 +24,9 @@ public class ClientHandler implements Runnable {
     // Очередь буферов для записи
     private final Queue<ByteBuffer> writeQueue = new LinkedList<>();
 
-    public ClientHandler(SocketChannel socketChannel, CommandProcessor processor) {
+    public ClientHandler(SocketChannel socketChannel) {
         this.socketChannel = socketChannel;
-        this.processor = processor;
+
     }
 
     @Override
@@ -109,11 +108,9 @@ public class ClientHandler implements Runnable {
             sendResponse("Сеанс завершён.");
             return false; // завершаем работу с клиентом
         }
-
         CommandResponse response = CommandManager.checkComm(request);
         String jsonResponse = gson.toJson(response);
         sendResponse(jsonResponse);
-
         return true;
     }
 

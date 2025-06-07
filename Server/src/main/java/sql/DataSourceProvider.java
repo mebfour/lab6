@@ -13,6 +13,7 @@ public class DataSourceProvider {
 
     static {
         HikariConfig config = new HikariConfig();
+        //config.setJdbcUrl("jdbc:postgresql://localhost:5432/studs");
         config.setJdbcUrl("jdbc:postgresql://localhost:51234/studs");
         config.setUsername("s465842");
         config.setPassword("jxFxdy8nXnbewTuG");

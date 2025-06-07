@@ -12,14 +12,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class TcpServer {
-    private final CommandProcessor processor;
+
     private final int port;
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
     private ExecutorService clientHandlersPool;
 
-    public TcpServer(CommandProcessor processor, int port) {
-        this.processor = processor;
+    public TcpServer(int port) {
+
         this.port = port;
     }
 
@@ -66,7 +66,7 @@ public class TcpServer {
             System.out.println("Новое подключение от " + clientChannel.getRemoteAddress());
 
             // Запускаем ClientHandler в отдельном потоке
-            ClientHandler handler = new ClientHandler(clientChannel, processor);
+            ClientHandler handler = new ClientHandler(clientChannel);
             clientHandlersPool.submit(handler);
         }
     }

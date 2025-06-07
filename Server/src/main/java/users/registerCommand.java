@@ -51,12 +51,8 @@ public class RegisterCommand implements Command {
             return new CommandResponse("Регистрация прошла успешно", true);
 
         } catch (SQLException e) {
-            // удали
-            e.printStackTrace();
             return new CommandResponse("Ошибка работы с базой данных: " + e.getMessage(), false);
         } catch (NoSuchAlgorithmException e) {
-            //  удали
-            e.printStackTrace();
             return new CommandResponse("Ошибка хэширования пароля", false);
         }
     }

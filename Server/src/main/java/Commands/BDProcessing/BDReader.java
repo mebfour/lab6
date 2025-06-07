@@ -3,30 +3,21 @@ package Commands.BDProcessing;
 import Classes.Coordinates;
 import Classes.Location;
 import Classes.Route;
-import Collection.RouteCollectionManager;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Unmarshaller;
 import sql.DataSourceProvider;
 
 import javax.sql.DataSource;
-import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Date;
 import java.util.LinkedHashMap;
 
-import static Collection.RouteCollectionManager.globalFilePath;
-
 
 public class BDReader {
-
-    public static RouteWrapper readRoutesFromBd(String filePath){
+    public static RouteWrapper readRoutesFromBd(){
         try {
-
             RouteWrapper wrapper = new RouteWrapper();
             LinkedHashMap<String, Route> routes = new LinkedHashMap<>();
-
             DataSource ds = DataSourceProvider.getDataSource();
             if (ds == null) {
                 System.err.println("Ошибка: DataSource не инициализирован");
@@ -72,16 +63,10 @@ public class BDReader {
 
                     routes.put(route.getKey(), route);
                 }
-
                 wrapper.setRouteMap(routes);
-
-                // Устанавливаем время инициализации как текущее время
-
 
             } catch (Exception e) {
                 System.err.println("Ошибка при загрузке коллекции из базы данных");
-                //удали
-                e.printStackTrace();
             }
 
 
@@ -92,27 +77,6 @@ public class BDReader {
 
             return new RouteWrapper();
         }
-    }
-    private static LinkedHashMap<String, Route> readDefaultFile() {
-        try {
-            File defaultFile = new File(globalFilePath);
-            if (defaultFile.exists()) {
-                try (InputStream is = new FileInputStream(defaultFile)) {
-                    JAXBContext context = JAXBContext.newInstance(RouteWrapper.class);
-                    Unmarshaller unmarshaller = context.createUnmarshaller();
-                    RouteWrapper wrapper = (RouteWrapper) unmarshaller.unmarshal(is);
-                    if (wrapper.getInitializationTime()!= null){
-                        RouteCollectionManager.setInitializationTime(wrapper.getInitializationTime());
-                    }
-                    return wrapper.getRouteMap() != null ?
-                            new LinkedHashMap<>(wrapper.getRouteMap()) :
-                            new LinkedHashMap<>();
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Ошибка чтения файла по умолчанию");
-        }
-        return new LinkedHashMap<>(); // Возвращаем пустую коллекцию
     }
 }
 
