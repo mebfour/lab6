@@ -3,8 +3,10 @@ package Collection;
 import Classes.Route;
 
 import java.sql.*;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Класс для управления коллекцией маршрутов.
@@ -21,7 +23,9 @@ import static managers.CommandManager.collectionManager;
 @XmlRootElement(name = "routeList")
 public class RouteCollectionManager {
     public static String globalFilePath = "file.xml";
-    public static LinkedHashMap<String, Route> routeList = BDReader.readRoutesFromBd(globalFilePath).getRouteMap();
+    public static Map<String, Route> routeList = Collections.synchronizedMap( new LinkedHashMap<>(
+            BDReader.readRoutesFromBd(globalFilePath).getRouteMap()) );
+
     private static Date initializationTime = new Date();
     private int currentMaxId = (int) routeList.values().stream()
                 .mapToLong(Route::getId)
@@ -62,7 +66,7 @@ public class RouteCollectionManager {
     }
 
     @XmlElement(name="route")
-    public LinkedHashMap getCollection() {
+    public Map getCollection() {
         return routeList;
     }
 

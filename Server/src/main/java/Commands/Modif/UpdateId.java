@@ -29,11 +29,13 @@ public class UpdateId implements Command {
             boolean findId = false;
 
             String key = null;
-            for (Map.Entry<String, Route> entry : routeList.entrySet()) {
-                if (entry.getValue().getId() == id) {
-                    key = entry.getKey();
-                    findId = true;
-                    break;
+            synchronized(routeList) {
+                for (Map.Entry<String, Route> entry : routeList.entrySet()) {
+                    if (entry.getValue().getId() == id) {
+                        key = entry.getKey();
+                        findId = true;
+                        break;
+                    }
                 }
             }
             if (!findId) {

@@ -8,6 +8,7 @@ import Commands.CommandResponse;
 
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static Collection.RouteCollectionManager.routeList;
 import static users.LoginCommand.username;
@@ -33,7 +34,7 @@ public class ReplaceIfLowe implements Command {
         String targetKey = keys[0].trim();
         String newKey = keys[1].trim();
 
-        LinkedHashMap<String, Route> routeList = collectionManager.getCollection();
+        Map<String, Route> routeList = collectionManager.getCollection();
 
         if (routeList.isEmpty()) {
             return new CommandResponse("Коллекция пуста! Введите add для добавления нового элемента.", false);

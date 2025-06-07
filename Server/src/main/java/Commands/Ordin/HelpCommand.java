@@ -7,6 +7,7 @@ import Commands.CommandList;
 
 import java.util.Map;
 
+import static Collection.RouteCollectionManager.routeList;
 import static managers.CommandManager.commandList;
 
 public class HelpCommand implements Command {
@@ -17,10 +18,12 @@ public class HelpCommand implements Command {
     public CommandResponse execute(String args) {
         System.out.println("Доступные команды:");
         String ans ="";
-        for (Map.Entry<String, Command> currentCommand : commandList.entrySet()) {
-            String commandName = currentCommand.getKey();
-            Command command = commandList.get(commandName);
-            ans += ("- " + commandName +" "+ command.getDescription()+'\n');
+        synchronized(routeList) {
+            for (Map.Entry<String, Command> currentCommand : commandList.entrySet()) {
+                String commandName = currentCommand.getKey();
+                Command command = commandList.get(commandName);
+                ans += ("- " + commandName + " " + command.getDescription() + '\n');
+            }
         }
         return new CommandResponse(ans, true);
     }

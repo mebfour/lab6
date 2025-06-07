@@ -8,6 +8,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import Classes.Route;
 
@@ -18,7 +19,7 @@ import static Collection.RouteCollectionManager.routeList;
 @XmlAccessorType(XmlAccessType.PROPERTY)
 public class RouteWrapper {
     private Date initializationTime;
-    private LinkedHashMap<String, Route> routeMap = routeList;
+    private Map<String, Route> routeMap = routeList;
     private List<Route> routes;
     @XmlElement(name = "initializationTime")
     public Date getInitializationTime() {
@@ -29,7 +30,7 @@ public class RouteWrapper {
     }
 
     @XmlElement(name = "route") // Указываем имя элемента в XML
-    public LinkedHashMap<String, Route> getRouteMap() {
+    public Map<String, Route> getRouteMap() {
         return routeMap;
     }
 

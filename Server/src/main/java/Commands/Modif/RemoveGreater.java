@@ -22,7 +22,7 @@ public class RemoveGreater implements Command {
             return new CommandResponse("Ключ не передан.", false);
         }
 
-        LinkedHashMap<String, Route> routeList = collectionManager.getCollection();
+        Map<String, Route> routeList = collectionManager.getCollection();
 
         if (routeList.isEmpty()) {
             return new CommandResponse("Коллекция пуста! Введите add для добавления нового элемента.", false);
@@ -31,31 +31,32 @@ public class RemoveGreater implements Command {
         if (!routeList.containsKey(inpKey)) {
             return new CommandResponse("Элемент с ключом " + inpKey + " не найден.", false);
         }
+        synchronized(routeList) {
+            Iterator<Map.Entry<String, Route>> it = routeList.entrySet().iterator();
+            boolean foundKey = false;
+            boolean done = false;
+            int removedCount = 0;
 
-        Iterator<Map.Entry<String, Route>> it = routeList.entrySet().iterator();
-        boolean foundKey = false;
-        boolean done = false;
-        int removedCount = 0;
-
-        while (it.hasNext()) {
-            Map.Entry<String, Route> entry = it.next();
-            if (foundKey) {
-                if (routeList.get(entry.getKey()).getOwner().equals(username)) {
-                    collectionManager.removeConcrFromBD(entry.getValue().getKey());
-                    it.remove();
-                    removedCount++;
-                    done = true;
+            while (it.hasNext()) {
+                Map.Entry<String, Route> entry = it.next();
+                if (foundKey) {
+                    if (routeList.get(entry.getKey()).getOwner().equals(username)) {
+                        collectionManager.removeConcrFromBD(entry.getValue().getKey());
+                        it.remove();
+                        removedCount++;
+                        done = true;
+                    }
+                } else if (entry.getKey().equals(inpKey)) {
+                    foundKey = true;
                 }
-            } else if (entry.getKey().equals(inpKey)) {
-                foundKey = true;
             }
-        }
 
-        if (done) {
-           // collectionManager.saveToFile();
-            return new CommandResponse("Элементы, следующие за ключом " + inpKey + ", успешно удалены (" + removedCount + " шт.)", true);
-        } else {
-            return new CommandResponse("После ключа " + inpKey + " не было элементов для удаления.", false);
+            if (done) {
+                // collectionManager.saveToFile();
+                return new CommandResponse("Элементы, следующие за ключом " + inpKey + ", успешно удалены (" + removedCount + " шт.)", true);
+            } else {
+                return new CommandResponse("После ключа " + inpKey + " не было элементов для удаления.", false);
+            }
         }
     }
 
