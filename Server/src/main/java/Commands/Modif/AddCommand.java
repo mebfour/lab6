@@ -30,32 +30,37 @@ public class AddCommand implements Command {
 
             String username = request.getUsername();
             String password = request.getPassword();
-            Route route = request.getRoute();
+            Route route = gson.fromJson(jsonArgs, Route.class);
 
-            if (username == null || password == null || username.isBlank() || password.isBlank()) {
-                return new CommandResponse("Требуется авторизация: логин и пароль обязательны", false);
-            }
 
-            if (!isAuthorized(username, password)) {
-                return new CommandResponse("Авторизация не пройдена: неверный логин или пароль", false);
-            }
+//            if (username == null || password == null || username.isBlank() || password.isBlank()) {
+//                return new CommandResponse("Требуется авторизация: логин и пароль обязательны", false);
+//            }
+
+//            if (!isAuthorized(username, password)) {
+//                return new CommandResponse("Авторизация не пройдена: неверный логин или пароль", false);
+//            }
 
 
             int id = (int) collectionManager.generateNextId();
+            System.out.println("id: " + id);
+            System.out.println(route);
             route.setId(id);
 
             // Устанавливаем владельца объекта
-            route.setOwner(username); // Добавьте поле owner в Route
+            //route.setOwner(username); // Добавьте поле owner в Route
 
 
             // После добавления - сохранить коллекцию в файл
-            collectionManager.saveToFile();
+       //     collectionManager.saveToFile();
 
             collectionManager.saveToBD(route);
 
             return new CommandResponse("Маршрут успешно добавлен!", true);
         } catch (Exception e) {
 
+            //удали
+            e.printStackTrace();
             return new CommandResponse("Ошибка добавления маршрута", false);
         }
     }

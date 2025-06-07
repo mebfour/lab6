@@ -4,6 +4,8 @@ import Classes.Coordinates;
 import Classes.Location;
 import Classes.Route;
 
+import static ToStart.UserSession.currentUsername;
+
 public class inputObject {
 
     public static Route inputObject(Route route, InputProvider inputProvider) {
@@ -33,6 +35,7 @@ public class inputObject {
         locationFrom.setY(inputProvider.readInt("Введите y:", Integer.MIN_VALUE));
         locationFrom.setZ(inputProvider.readInt("Введите z:", Integer.MIN_VALUE));
         route.setFrom(locationFrom);
+        route.setOwner(currentUsername);
         return route;
     }
 

@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import java.util.Map;
 
 import static Collection.RouteCollectionManager.routeList;
+import static users.LoginCommand.username;
 
 public class UpdateId implements Command {
     private final RouteCollectionManager collectionManager;
@@ -39,16 +40,19 @@ public class UpdateId implements Command {
                 return new CommandResponse("Элемент с таким id не найден.", false);
             }
 
+            if (routeList.get(key).getOwner().equals(username)) {
+                updatedRoute.setKey(key);
 
-            updatedRoute.setKey(key);
+                collectionManager.updateToBD(updatedRoute);
 
-            collectionManager.updateToBD(updatedRoute);
-
-            collectionManager.addToCollection(updatedRoute);
+                collectionManager.addToCollection(updatedRoute);
 
 
-            collectionManager.saveToFile();
-            return new CommandResponse("Элемент успешно обновлён.", true);
+                // collectionManager.saveToFile();
+                return new CommandResponse("Элемент успешно обновлён.", true);
+            }else {
+                return new CommandResponse("Ошибка доступа: объект Вам не принадлежит", false);
+            }
 
         } catch (Exception e) {
             return new CommandResponse("Ошибка обновления элемента.", false);

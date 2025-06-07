@@ -11,6 +11,8 @@ import java.util.Scanner;
 import java.util.function.Consumer;
 import ToStart.CommandRequest;
 
+import static ToStart.UserSession.currentUsername;
+
 public class Register implements ClientCommand {
     private final Gson gson;
     private final Consumer<String> sendMessage;
@@ -26,7 +28,7 @@ public class Register implements ClientCommand {
         // Считываем логин
         System.out.print("Введите логин: ");
         String username = scanner.nextLine().trim();
-
+        currentUsername = username;
         // Считываем пароль скрытым вводом
         String password;
 
@@ -45,14 +47,14 @@ public class Register implements ClientCommand {
 
         // Формируем объект с параметрами регистрации
         Map<String, String> params = new HashMap<>();
-        params.put("username", username);
+        params.put("username", currentUsername);
         params.put("password", password);
 
         // Преобразуем параметры в JSON
         String jsonParams = gson.toJson(params);
 
         // Создаём запрос с командой "register" и параметрами
-        CommandRequest commandRequest = new CommandRequest("register", jsonParams);
+        CommandRequest commandRequest = new CommandRequest("register", jsonParams, currentUsername);
 
         // Сериализуем запрос в JSON
         String jsonRequest = gson.toJson(commandRequest);

@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
+import static ToStart.UserSession.currentUsername;
+
 public class UpdateIdCommand implements ClientCommand {
     private final Gson gson;
     private final Consumer<String> sendMessage;
@@ -28,7 +30,8 @@ public class UpdateIdCommand implements ClientCommand {
         int id = -1;
 
         // Если id передан в аргументах команды
-        if (args.length > 0) {
+        if (args.length > 1) {
+            System.out.println(args.length);
             try {
                 id = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
@@ -77,7 +80,7 @@ public class UpdateIdCommand implements ClientCommand {
 
         String updateJson = gson.toJson(updatedRoute);
 
-        CommandRequest updateRequest = new CommandRequest("update_id", updateJson);
+        CommandRequest updateRequest = new CommandRequest("update_id", updateJson,currentUsername);
         sendMessage.accept(gson.toJson(updateRequest));
     }
 

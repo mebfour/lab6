@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
+import static ToStart.UserSession.currentUsername;
+
 public class AddCommand implements ClientCommand {
     private final Gson gson;
     private final Consumer<String> sendMessage;
@@ -16,7 +18,6 @@ public class AddCommand implements ClientCommand {
     public AddCommand(Gson gson, Consumer<String> sendMessage) {
         this.gson = gson;
         this.sendMessage = sendMessage;
-
     }
 
     @Override
@@ -25,7 +26,8 @@ public class AddCommand implements ClientCommand {
         route = inputObject.inputObject(route, provider);
 
         String jsonRoute = gson.toJson(route);
-        CommandRequest commandRequest = new CommandRequest("add", jsonRoute);
+
+        CommandRequest commandRequest = new CommandRequest("add", jsonRoute, currentUsername);
         String jsonRequest = gson.toJson(commandRequest);
 
         sendMessage.accept(jsonRequest);

@@ -2,7 +2,6 @@ package Collection;
 
 import Classes.Route;
 
-import java.io.File;
 import java.sql.*;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -12,10 +11,7 @@ import java.util.LinkedHashMap;
  * Инкапсулирует логику работы с данными.
  */
 
-import Commands.XmlProcessing.RouteWrapper;
-import Commands.XmlProcessing.XmlRouteReader;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Marshaller;
+import Commands.BDProcessing.BDReader;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import sql.DataSourceProvider;
@@ -25,7 +21,7 @@ import static managers.CommandManager.collectionManager;
 @XmlRootElement(name = "routeList")
 public class RouteCollectionManager {
     public static String globalFilePath = "file.xml";
-    public static LinkedHashMap<String, Route> routeList = XmlRouteReader.readRoutesFromBd(globalFilePath).getRouteMap();
+    public static LinkedHashMap<String, Route> routeList = BDReader.readRoutesFromBd(globalFilePath).getRouteMap();
     private static Date initializationTime = new Date();
     private int currentMaxId = (int) routeList.values().stream()
                 .mapToLong(Route::getId)
@@ -37,7 +33,7 @@ public class RouteCollectionManager {
 
     public static void init(String path) {
         globalFilePath = path;
-        routeList = XmlRouteReader.readRoutesFromBd(globalFilePath).getRouteMap();
+        routeList = BDReader.readRoutesFromBd(globalFilePath).getRouteMap();
 
     }
 
@@ -122,6 +118,8 @@ public class RouteCollectionManager {
             // Добавляем в коллекцию
             collectionManager.addToCollection(route);
         }catch (SQLException e) {
+            // удали
+            e.printStackTrace();
             System.err.println("Ошибка подключения к БД");
 
         }
@@ -162,14 +160,15 @@ public class RouteCollectionManager {
 
     public void saveToBD(Route route){
         String sql = "INSERT INTO routes (map_key, name, creation_date, coordinates_x, coordinates_y, " +
-                "to_name, to_x, to_y, to_z, from_name, from_x, from_y, from_z) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                "to_name, to_x, to_y, to_z, from_name, from_x, from_y, from_z, owner) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
 
         //  Сохраняем в БД
         try (Connection conn = DataSourceProvider.getDataSource().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)){
 
-
+            System.out.println(route);
+            System.out.println("Маршрут перед сохранением в БД");
             ps.setString(1, route.getKey());
             ps.setString(2, route.getName());
             ps.setTimestamp(3, Timestamp.from(route.getCreationDate().toInstant()));
@@ -183,6 +182,7 @@ public class RouteCollectionManager {
             ps.setFloat(11, route.getFrom().getX());
             ps.setInt(12, route.getFrom().getY());
             ps.setInt(13, route.getFrom().getZ());
+            ps.setString(14, route.getOwner());
 
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()) {
@@ -193,27 +193,29 @@ public class RouteCollectionManager {
             // Добавляем в коллекцию
             collectionManager.addToCollection(route);
         }catch (SQLException e) {
+            // удали
+            e.printStackTrace();
             System.err.println("Ошибка подключения  к БД");
         }
     }
 
 
-    public void saveToFile() {
-        String filePath = globalFilePath;
-        try {
-            RouteWrapper wrapper = new RouteWrapper();
-            wrapper.setRouteMap(routeList);
-            wrapper.setInitializationTime(initializationTime);
+//    public void saveToFile() {
+//        String filePath = globalFilePath;
+//        try {
+//            RouteWrapper wrapper = new RouteWrapper();
+//            wrapper.setRouteMap(routeList);
+//            wrapper.setInitializationTime(initializationTime);
+//
+//            JAXBContext context = JAXBContext.newInstance(RouteWrapper.class, Route.class);
+//            Marshaller marshaller = context.createMarshaller();
+//            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+//
+//            marshaller.marshal(wrapper, new File(filePath));
+//        } catch (Exception e) {
+//
+//            System.err.println("Ошибка при сохранении в XML");
+//        }
 
-            JAXBContext context = JAXBContext.newInstance(RouteWrapper.class, Route.class);
-            Marshaller marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-
-            marshaller.marshal(wrapper, new File(filePath));
-        } catch (Exception e) {
-
-            System.err.println("Ошибка при сохранении в XML");
-        }
-
-    }
+    //}
 }

@@ -3,30 +3,45 @@ package Commands.Modif;
 import Commands.Command;
 import Commands.CommandResponse;
 
+import static Collection.RouteCollectionManager.routeList;
 import static managers.CommandManager.collectionManager;
+import static users.LoginCommand.username;
 
 public class RemoveByKey implements Command {
+
+
     @Override
     public CommandResponse execute(String args) {
+        try {
+            String key = (args != null) ? args.trim() : "";
 
-        String key = (args != null) ? args.trim() : "";
+            if (key.isEmpty()) {
+                return new CommandResponse("Ключ не передан.", false);
+            }
 
-        if (key.isEmpty()) {
-            return new CommandResponse("Ключ не передан.", false);
+            if (collectionManager.getCollection().isEmpty()) {
+                return new CommandResponse("Коллекция пуста! Введите add для добавления нового элемента.", false);
+            }
+
+            if (collectionManager.getCollection().containsKey(key)) {
+
+                if (routeList.get(key).getOwner().equals(username)) {
+                    collectionManager.removeConcrFromBD(key);
+                    collectionManager.getCollection().remove(key);
+                    return new CommandResponse("Элемент с ключом " + key + " успешно удалён.", true);
+                } else {
+                    return new CommandResponse("Ошибка доступа: объект Вам не принадлежит", false);
+                }
+
+
+            } else {
+                return new CommandResponse("Элемент с ключом " + key + " не найден.", false);
+            }
+        }catch (Exception e) {
+            //удали
+            e.printStackTrace();
         }
-
-        if (collectionManager.getCollection().isEmpty()) {
-            return new CommandResponse("Коллекция пуста! Введите add для добавления нового элемента.", false);
-        }
-
-        if (collectionManager.getCollection().containsKey(key)) {
-            collectionManager.removeConcrFromBD(key);
-            collectionManager.getCollection().remove(key);
-            collectionManager.saveToFile(); // сохраняем изменения
-            return new CommandResponse("Элемент с ключом " + key + " успешно удалён.", true);
-        } else {
-            return new CommandResponse("Элемент с ключом " + key + " не найден.", false);
-        }
+        return null;
     }
 
 

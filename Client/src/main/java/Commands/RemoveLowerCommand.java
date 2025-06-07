@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
+import static ToStart.UserSession.currentUsername;
+
 public class RemoveLowerCommand implements ClientCommand {
     private final Gson gson;
     private final Consumer<String> sendMessage;
@@ -34,7 +36,7 @@ public class RemoveLowerCommand implements ClientCommand {
                 System.out.println("Ключ не может быть пустым. Повторите ввод.");
             }
         }
-        CommandRequest lowerRequest = new CommandRequest("remove_lower", key);
+        CommandRequest lowerRequest = new CommandRequest("remove_lower", key,currentUsername);
         sendMessage.accept(gson.toJson(lowerRequest));
     }
 

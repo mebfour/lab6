@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static managers.CommandManager.collectionManager;
+import static users.LoginCommand.username;
 
 public class RemoveLower implements Command {
     @Override
@@ -37,17 +38,19 @@ public class RemoveLower implements Command {
         while (it.hasNext()) {
             Map.Entry<String, Route> entry = it.next();
             // Удаляем до и включая ключ
-            collectionManager.removeConcrFromBD(entry.getValue().getKey());
-            it.remove();
-            removedCount++;
-            done = true;
+            if (routeList.get(entry.getKey()).getOwner().equals(username)) {
+                collectionManager.removeConcrFromBD(entry.getValue().getKey());
+                it.remove();
+                removedCount++;
+                done = true;
+            }
             if (entry.getKey().equals(inpKey)) {
                 break;
             }
         }
 
         if (done) {
-            collectionManager.saveToFile();
+        //    collectionManager.saveToFile();
             return new CommandResponse("Элементы до и включая ключ " + inpKey + " успешно удалены (" + removedCount + " шт.)", true);
         } else {
             return new CommandResponse("Не было элементов для удаления.", false);

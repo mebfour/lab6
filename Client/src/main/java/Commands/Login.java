@@ -2,6 +2,7 @@ package Commands;
 
 import InputHandler.InputProvider;
 import ToStart.CommandRequest;
+import ToStart.UserSession;
 import com.google.gson.Gson;
 
 import java.io.Console;
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Consumer;
+
+import static ToStart.UserSession.currentUsername;
 
 public class Login implements ClientCommand{
     private final Gson gson;
@@ -24,7 +27,7 @@ public class Login implements ClientCommand{
     public void clientExecute(String[] args, String pars, InputProvider provider, Scanner scanner) throws IOException {
         System.out.print("Введите логин: ");
         String username = scanner.nextLine().trim();
-
+        currentUsername = username;
         // Считываем пароль скрытым вводом
         String password;
 
@@ -39,14 +42,14 @@ public class Login implements ClientCommand{
 
         // Формируем параметры в Map
         Map<String, String> params = new HashMap<>();
-        params.put("username", username);
+        params.put("username", currentUsername);
         params.put("password", password);
 
         // Сериализуем параметры в JSON
         String jsonParams = gson.toJson(params);
 
         // Создаём объект запроса с командой "login"
-        CommandRequest commandRequest = new CommandRequest("login", jsonParams);
+        CommandRequest commandRequest = new CommandRequest("login", jsonParams, currentUsername);
 
         // Сериализуем запрос в JSON
         String jsonRequest = gson.toJson(commandRequest);

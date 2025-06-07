@@ -19,6 +19,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import static ToStart.UserSession.currentUsername;
+
 public class Client {
     private volatile CommandResponse lastResponse = null;
     private SocketChannel socketChannel;    //  Каждый SocketChannel, зарегистрированный в Selector, имеет связанный объект SelectionKey
@@ -69,7 +71,7 @@ public class Client {
 
     public boolean checkIdOnServer(int id) {
         try {
-            CommandRequest checkIdRequest = new CommandRequest("check_id", String.valueOf(id));
+            CommandRequest checkIdRequest = new CommandRequest("check_id", String.valueOf(id), currentUsername);
             String jsonRequest = gson.toJson(checkIdRequest);
 
             // Отправляем запрос
@@ -101,7 +103,7 @@ public class Client {
                 }
             }
         }
-        CommandRequest defaultRequest = new CommandRequest(inp[0], args);
+        CommandRequest defaultRequest = new CommandRequest(inp[0], args, currentUsername);
         sendMessage.accept(gson.toJson(defaultRequest));
     }
 
@@ -142,7 +144,7 @@ public class Client {
 
 
                     if (lastResponse != null && lastResponse.isSuccess()) {
-                        System.out.println("Авторизация прошла успешно.");
+                        //System.out.println("Авторизация прошла успешно.");
                         isAuthorized = true;
                         break;
                     } else {
@@ -173,7 +175,7 @@ public class Client {
                 if (commandName.equalsIgnoreCase("execute_script")) {
                     ExecuteScriptClient execScript = new ExecuteScriptClient();
                     execScript.clientExecute(args.split(" "));
-                    CommandRequest replaceRequest = new CommandRequest("execute_script", args);
+                    CommandRequest replaceRequest = new CommandRequest("execute_script", args, currentUsername);
                     sendMessage(gson.toJson(replaceRequest));
 
                     break;

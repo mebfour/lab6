@@ -9,6 +9,9 @@ import Commands.CommandResponse;
 
 import java.util.LinkedHashMap;
 
+import static Collection.RouteCollectionManager.routeList;
+import static users.LoginCommand.username;
+
 public class ReplaceIfLowe implements Command {
     private final RouteCollectionManager collectionManager;
 
@@ -41,18 +44,22 @@ public class ReplaceIfLowe implements Command {
 
         Route routeToModify = routeList.get(targetKey);
 
-        // Сравниваем строки-ключи лексикографически
-        if (newKey.compareTo(routeToModify.getKey()) < 0) {
+        if (routeToModify.getOwner().equals(username)) {
+            // Сравниваем строки-ключи лексикографически
+            if (newKey.compareTo(routeToModify.getKey()) < 0) {
 
-            routeToModify.setKey(newKey);
-            // Обновляем ключ в самой коллекции
-            collectionManager.updateToBD(routeToModify);
-            routeList.remove(targetKey);
-            routeList.put(newKey, routeToModify);
-            collectionManager.saveToFile();
-            return new CommandResponse("Ключ успешно заменён на " + newKey, true);
-        } else {
-            return new CommandResponse("Введённый ключ не меньше уже имеющегося, замена невозможна.", false);
+                routeToModify.setKey(newKey);
+                // Обновляем ключ в самой коллекции
+                collectionManager.updateToBD(routeToModify);
+                routeList.remove(targetKey);
+                routeList.put(newKey, routeToModify);
+                // collectionManager.saveToFile();
+                return new CommandResponse("Ключ успешно заменён на " + newKey, true);
+            } else {
+                return new CommandResponse("Введённый ключ не меньше уже имеющегося, замена невозможна.", false);
+            }
+        }else {
+            return new CommandResponse("Элемент Вам не принадлежит", false);
         }
     }
 

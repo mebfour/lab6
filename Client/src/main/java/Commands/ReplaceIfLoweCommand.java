@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
+import static ToStart.UserSession.currentUsername;
+
 public class ReplaceIfLoweCommand implements ClientCommand {
     private final Gson gson;
     private final Consumer<String> sendMessage;
@@ -49,7 +51,7 @@ public class ReplaceIfLoweCommand implements ClientCommand {
         String[] keys = {targetKey, newKey};
         // Собираем строку из двух ключей для передачи на сервер
         String replaceArg = String.join(" ", keys);
-        CommandRequest replaceRequest = new CommandRequest("replace_if_lowe", replaceArg);
+        CommandRequest replaceRequest = new CommandRequest("replace_if_lowe", replaceArg, currentUsername);
         sendMessage.accept(gson.toJson(replaceRequest));
     }
 

@@ -8,7 +8,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static Collection.RouteCollectionManager.routeList;
 import static managers.CommandManager.collectionManager;
+import static users.LoginCommand.username;
 
 public class RemoveGreater implements Command {
     @Override
@@ -38,17 +40,19 @@ public class RemoveGreater implements Command {
         while (it.hasNext()) {
             Map.Entry<String, Route> entry = it.next();
             if (foundKey) {
-                collectionManager.removeConcrFromBD(entry.getValue().getKey());
-                it.remove();
-                removedCount++;
-                done = true;
+                if (routeList.get(entry.getKey()).getOwner().equals(username)) {
+                    collectionManager.removeConcrFromBD(entry.getValue().getKey());
+                    it.remove();
+                    removedCount++;
+                    done = true;
+                }
             } else if (entry.getKey().equals(inpKey)) {
                 foundKey = true;
             }
         }
 
         if (done) {
-            collectionManager.saveToFile();
+           // collectionManager.saveToFile();
             return new CommandResponse("Элементы, следующие за ключом " + inpKey + ", успешно удалены (" + removedCount + " шт.)", true);
         } else {
             return new CommandResponse("После ключа " + inpKey + " не было элементов для удаления.", false);

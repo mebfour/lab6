@@ -15,10 +15,11 @@ public class Route {
     private Location to; //Поле может быть null
     private Double distance; //Поле может быть null, Значение поля должно быть больше 1
     private String key;
+    private String owner;
 
     public Route() {}
 
-    public Route(int id, String name, Coordinates coordinates, Date creationDate, Location from, Location to, Double distance) {
+    public Route(int id, String name, Coordinates coordinates, Date creationDate, Location from, Location to, Double distance, String owner) {
         this.id = id;
         this.name = name;
         this.coordinates = coordinates;
@@ -27,6 +28,7 @@ public class Route {
         this.to = to;
         this.distance = distance;
         this.key = key;
+        this.owner = owner;
     }
 
     public Route(String name, Coordinates coordinates, Location from, Location to, Double distance) {
@@ -113,7 +115,8 @@ public class Route {
     public void setId(int id) {
         this.id = id;
     }
-
+    public String getOwner() {return owner;}
+    public void setOwner(String owner) {this.owner = owner;}
     public String toString() {
         String info = "";
         info += "\n Ключ: " + key;
@@ -123,6 +126,7 @@ public class Route {
         info += '\n'+"Добавлен "+date.substring(0, 10)+" "+date.substring(11, 19)+'\n';
         info += "\n Куда " + to;
         info += "\n Откуда " + from;
+        info += "\n Добавил " + owner;
         info += "\n id: " + id+ '\n' + "=========================================";;
         return info;
     }

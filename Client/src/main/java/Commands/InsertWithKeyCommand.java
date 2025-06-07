@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
+import static ToStart.UserSession.currentUsername;
+
 public class InsertWithKeyCommand implements ClientCommand {
     private final Gson gson;
     private final Consumer<String> sendMessage;
@@ -43,7 +45,7 @@ public class InsertWithKeyCommand implements ClientCommand {
         String jsonRoute = gson.toJson(route);
 
         // Формируем запрос
-        CommandRequest commandRequest = new CommandRequest("add", jsonRoute);
+        CommandRequest commandRequest = new CommandRequest("add", jsonRoute, currentUsername);
         String jsonRequest = gson.toJson(commandRequest);
 
         // Отправляем на сервер

@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class RegisterCommand implements Command {
     final Gson gson = new Gson();
-
+    LoginCommand loginCommand = new LoginCommand();
     @Override
     public CommandResponse execute(String jsonArgs) {
         DataSource ds = DataSourceProvider.getDataSource();
@@ -47,7 +47,7 @@ public class RegisterCommand implements Command {
                 ps.setString(2, hashedPassword);
                 ps.executeUpdate();
             }
-
+            loginCommand.setUsername(username);
             return new CommandResponse("Регистрация прошла успешно", true);
 
         } catch (SQLException e) {

@@ -1,4 +1,4 @@
-package Commands.XmlProcessing;
+package Commands.BDProcessing;
 
 import Classes.Coordinates;
 import Classes.Location;
@@ -13,15 +13,13 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import static Collection.RouteCollectionManager.globalFilePath;
 
 
-public class XmlRouteReader {
+public class BDReader {
 
     public static RouteWrapper readRoutesFromBd(String filePath){
         try {

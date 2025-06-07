@@ -14,7 +14,7 @@ import java.util.Map;
 public class LoginCommand implements Command {
     private final Gson gson = new Gson();
     private static final DataSource ds = DataSourceProvider.getDataSource();
-
+    public static String username;
     @Override
     public CommandResponse execute(String jsonArgs) {
         if (ds == null) {
@@ -23,7 +23,7 @@ public class LoginCommand implements Command {
 
         try (Connection conn = DataSourceProvider.getDataSource().getConnection()) {
             Map<String, String> params = gson.fromJson(jsonArgs, new TypeToken<Map<String, String>>(){}.getType());
-            String username = params.get("username");
+            username = params.get("username");
             String password = params.get("password");
 
             if (username == null || password == null || username.isBlank() || password.isBlank()) {
@@ -52,6 +52,14 @@ public class LoginCommand implements Command {
             e.printStackTrace();
             return new CommandResponse("Ошибка при авторизации: " + e.getMessage(), false);
         }
+    }
+
+    public static String getUsername() {
+        return username;
+    }
+
+    public static void setUsername(String username) {
+        LoginCommand.username = username;
     }
 
     @Override
