@@ -1,53 +1,93 @@
 package ToStart;
 
-import Classes.Route;
 import Classes.RouteDTO;
 import InputHandler.JsonToRouteMapper;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.util.Duration;
+import paint.MyBoundingBox;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class MainWindowController {
 
     private final BorderPane root = new BorderPane();
     private final ObservableList<RouteDTO> data = FXCollections.observableArrayList();
     private final TableView<RouteDTO> tableView = new TableView<>(data);
-    private final Canvas canvas = new Canvas(300, 500);
     private final ClientNetworkManager clientNetworkManager;
     private final String currentUser;
     private Map<String, RouteDTO> routeMap = new LinkedHashMap<>();
+    private Canvas canvas;
+    private final Map<String, Paint> userColors = new HashMap<>();
+    private final Random random = new Random();
 
     public MainWindowController(ClientNetworkManager clientNetworkManager, String username) {
         this.clientNetworkManager = clientNetworkManager;
         this.currentUser = username;
+        this.canvas  = new Canvas(800, 600);
+        this.canvas.setWidth(600);
+        setupTable();
+        Label userLabel = new Label("Пользователь: " + username);
+        Button addButton = new Button("Добавить");
+        Button removeButton = new Button("Удалить");
+
+        HBox buttonBox = new HBox(10, addButton, removeButton);
+
+        // Устанавливаем минимальную ширину таблицы и максимальную для растяжения
+        tableView.setMinWidth(400);
+        tableView.setMaxWidth(Double.MAX_VALUE);
+        // Устанавливаем фиксированную ширину Canvas
+
+        // --- Создаем HBox для горизонтального размещения --
+
+
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            double mouseX = event.getX();
+            double mouseY = event.getY();
+
+            for (RouteDTO route : routeMap.values()) {
+                if (route.getBoundingBox() != null && route.getBoundingBox().contains(mouseX, mouseY)) {
+                    showRouteInfo(route);
+                    break;
+                }
+            }
+        });
+        drawRoutes();
+
+        //  HBox для горизонтального размещения ---
+        HBox hBox = new HBox(10); // 10 — отступ между элементами
+        hBox.getChildren().addAll(tableView, canvas);
+
+// Размещаем элементы в BorderPane
+        root.setTop(userLabel);
+        root.setCenter(hBox);
+        root.setBottom(buttonBox);
+
 
         // Подписка на изменение routeResponse
         clientNetworkManager.routeResponseProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 String jsonArgs = newVal.getMessage();
-                System.out.println("JSON из routeResponse: " + jsonArgs);
                 if (jsonArgs != null && jsonArgs.trim().startsWith("{")) {
                     try {
                         routeMap = JsonToRouteMapper.parseJsonToRouteMap(jsonArgs);
-                        Platform.runLater(() -> updateTable());
+                        Platform.runLater(() -> {
+                            updateTable();
+                            drawRoutes(); // Обновляем Canvas
+                        });
                     } catch (Exception e) {
                         e.printStackTrace();
                         System.err.println("Ошибка парсинга JSON");
@@ -79,27 +119,13 @@ public class MainWindowController {
         clientNetworkManager.loadRoutesFromMapAsync();
 
 
-
-
-        Label userLabel = new Label("Пользователь: " + username);
-
-        setupTable();
-
-        Button addButton = new Button("Добавить");
-        Button removeButton = new Button("Удалить");
-
-        HBox buttonBox = new HBox(10, addButton, removeButton);
-
         // Рисуем простой фон на canvas
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setFill(Color.LIGHTGRAY);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // Размещаем элементы
-        root.setTop(userLabel);
-        root.setCenter(tableView);
-        root.setRight(canvas);
-        root.setBottom(buttonBox);
+
+
     }
 
     public BorderPane getView() {
@@ -166,4 +192,91 @@ public class MainWindowController {
         return col;
     }
 
+    private void drawRoutes() {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+
+        // Очищаем Canvas
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+        // Рисуем фон
+        gc.setFill(Color.LIGHTGRAY);
+        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+        // Масштабирование координат
+        double scale = 10; // Увеличиваем координаты в 10 раз
+
+        // Цвета по владельцам
+        Map<String, Paint> userColors = new HashMap<>();
+
+        for (RouteDTO route : routeMap.values()) {
+            double x = route.getX() * scale;
+            double y = route.getY() * scale;
+            String owner = route.getOwner();
+
+            // Получаем цвет для владельца
+            userColors.putIfAbsent(owner, getRandomColor());
+            Paint color = userColors.get(owner);
+
+            // Рисуем точку
+            gc.setFill(color);
+            gc.fillOval(x - 5, y - 5, 10, 10);
+
+            // Добавляем текст: ID маршрута
+            gc.setFill(Color.BLACK);
+            gc.fillText(String.valueOf(route.getId()), x + 8, y + 4);
+
+            // Сохраняем "объект" как прямоугольник для проверки клика
+            route.setBoundingBox(new MyBoundingBox(x, y, 10, 10, route));
+        }
+
+        // Рисуем легенду справа
+        drawLegend(gc, userColors);
+    }
+    private void showRouteInfo(RouteDTO route) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Информация о маршруте");
+        alert.setHeaderText(null);
+        alert.setContentText(
+                "ID: " + route.getId() + "\n" +
+                        "Название: " + route.getName() + "\n" +
+                        "Владелец: " + route.getOwner() + "\n" +
+                        "From: " + route.getFromName() + " (" + route.getFromX() + ", " + route.getFromY() + ", " + route.getFromZ() + ")" + "\n" +
+                        "To: " + route.getToName() + " (" + route.getToX() + ", " + route.getToY() + ", " + route.getToZ() + ")"
+        );
+        alert.showAndWait();
+    }
+    private void startPulseAnimation(GraphicsContext gc, double x, double y, Paint color) {
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.millis(500),
+                        e -> {
+                            double scale = 1 + Math.sin(System.currentTimeMillis() / 300.0) * 0.5;
+                            gc.setFill(color);
+                            gc.fillOval(x - 5 * scale, y - 5 * scale, 10 * scale, 10 * scale);
+                        }
+                )
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+    private Paint getRandomColor() {
+        return Color.hsb(random.nextInt(360), 0.8, 0.9);
+    }
+    private void drawLegend(GraphicsContext gc, Map<String, Paint> userColors) {
+        int legendX = (int) canvas.getWidth() - 100; // Позиция легенды
+        int legendY = 50;
+
+        for (String owner : userColors.keySet()) {
+            Paint color = userColors.get(owner);
+
+            // Рисуем цветовой блок
+            gc.setFill(color);
+            gc.fillRect(legendX, legendY, 20, 20);
+
+            // Рисуем имя владельца
+            gc.setFill(Color.BLACK);
+            gc.fillText(owner, legendX + 30, legendY + 15);
+
+            legendY += 30; // Сдвигаем следующий элемент
+        }
+    }
 }
