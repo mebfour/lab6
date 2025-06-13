@@ -34,9 +34,7 @@ public class RouteCollectionManager {
     }
 
     public static void init() {
-
         routeList = BDReader.readRoutesFromBd().getRouteMap();
-
     }
 
     public static Date getInitializationTime() {

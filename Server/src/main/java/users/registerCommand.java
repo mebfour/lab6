@@ -27,7 +27,7 @@ public class RegisterCommand implements Command {
             Map<String, String> params = gson.fromJson(jsonArgs, new TypeToken<Map<String, String>>(){}.getType());
             String username = params.get("username");
             String password = params.get("password");
-
+            System.out.println("регаем");
             if (username == null || password == null || username.isBlank() || password.isBlank()) {
                 return new CommandResponse("Логин и пароль не могут быть пустыми", false);
             }
@@ -38,7 +38,7 @@ public class RegisterCommand implements Command {
             }
 
             // Хэшируем пароль
-            String hashedPassword = PasswordUtil.hashPassword(password);
+            String hashedPassword = password;
 
             // Сохраняем пользователя в базу
             String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
@@ -52,8 +52,6 @@ public class RegisterCommand implements Command {
 
         } catch (SQLException e) {
             return new CommandResponse("Ошибка работы с базой данных: " + e.getMessage(), false);
-        } catch (NoSuchAlgorithmException e) {
-            return new CommandResponse("Ошибка хэширования пароля", false);
         }
     }
 

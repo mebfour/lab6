@@ -35,10 +35,11 @@ public class LoginCommand implements Command {
                 ps.setString(1, username);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) {
-                        return new CommandResponse("Пользователь не найден", false);
+                        RegisterCommand registerCommand = new RegisterCommand();
+                        registerCommand.execute(jsonArgs);
                     }
                     String storedHash = rs.getString("password_hash");
-                    String providedHash = PasswordUtil.hashPassword(password);
+                    String providedHash = password;
                     System.out.println(providedHash);
                     if (storedHash.equals(providedHash)) {
                         return new CommandResponse("Авторизация успешна", true);
@@ -47,7 +48,7 @@ public class LoginCommand implements Command {
                     }
                 }
             }
-        } catch (SQLException | NoSuchAlgorithmException e) {
+        } catch (SQLException e) {
 
             return new CommandResponse("Ошибка при авторизации", false);
         }

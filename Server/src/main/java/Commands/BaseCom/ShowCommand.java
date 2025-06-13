@@ -22,9 +22,6 @@ public class ShowCommand implements Command {
         }
     }
 
-
-
-
     @Override
     public String getName() {
         return "show";
@@ -34,6 +31,5 @@ public class ShowCommand implements Command {
     public String getDescription() {
         return "выводит коллекцию";
     }
-
 }
 

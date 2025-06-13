@@ -2,10 +2,12 @@ package Commands;
 
 import InputHandler.InputProvider;
 import ToStart.CommandRequest;
+import ToStart.PasswordUtil;
 import com.google.gson.Gson;
 
 import java.io.Console;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -38,7 +40,11 @@ public class Login implements ClientCommand{
             System.out.print("Введите пароль: ");
             password = scanner.nextLine();
         }
-
+        try {
+            password = PasswordUtil.hashPassword(password);
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Ошибка хэширования пароля");
+        }
         // Формируем параметры в Map
         Map<String, String> params = new HashMap<>();
         params.put("username", currentUsername);

@@ -1,6 +1,5 @@
 package InputHandler;
 
-import Commands.CommandProcessor;
 import Commands.CommandRequest;
 import Commands.CommandResponse;
 import com.google.gson.Gson;
@@ -108,9 +107,12 @@ public class ClientHandler implements Runnable {
             sendResponse("Сеанс завершён.");
             return false; // завершаем работу с клиентом
         }
-        CommandResponse response = CommandManager.checkComm(request);
-        String jsonResponse = gson.toJson(response);
-        sendResponse(jsonResponse);
+        new Thread(() -> {
+            CommandResponse response = CommandManager.checkComm(request);
+            String jsonResponse = gson.toJson(response);
+            sendResponse(jsonResponse);
+        }).start();
+
         return true;
     }
 

@@ -5,7 +5,6 @@ import Commands.Command;
 import Commands.CommandResponse;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static Collection.RouteCollectionManager.routeList;
@@ -27,7 +26,10 @@ public class Clear implements Command {
                 }
             }
         }
-     //   collectionManager.saveToFile();
+
+        if (removedCount == 0) {
+            return new CommandResponse("Нет элементов для удаления", false);
+        }
         return new CommandResponse("Элементы успешно удалены (" + removedCount + " шт.)", true);
     }
 

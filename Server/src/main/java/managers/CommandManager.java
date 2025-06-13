@@ -5,6 +5,7 @@ package managers;
 import Collection.RouteCollectionManager;
 import Commands.*;
 import Commands.BaseCom.CheckIdCommand;
+import Commands.BaseCom.GetRoutesCommand;
 import Commands.BaseCom.InfoCommand;
 import Commands.BaseCom.ShowCommand;
 import Commands.Command;
@@ -44,7 +45,7 @@ public class CommandManager {
         commandList.put("check_id", new CheckIdCommand());
         commandList.put("register", new RegisterCommand());
         commandList.put("login", new LoginCommand());
-
+        commandList.put("get_routes", new GetRoutesCommand());
     }
     public static CommandResponse checkComm(CommandRequest request) {
         String commandName = request.getCommandName().toLowerCase();

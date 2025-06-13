@@ -25,7 +25,7 @@ public class RouteRequest {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) return false;
                     String storedHash = rs.getString("password_hash");
-                    String providedHash = PasswordUtil.hashPassword(password);
+                    String providedHash = password;
                     return storedHash.equals(providedHash);
                 }
             }

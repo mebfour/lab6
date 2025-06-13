@@ -1,32 +1,26 @@
 package Classes;
 
 
+import javafx.beans.property.*;
+
 public class Coordinates {
-    private Long x; //Значение поля должно быть больше -326, Поле не может быть null
-    private Integer y; //Значение поля должно быть больше -258, Поле не может быть null
+    private final LongProperty x = new SimpleLongProperty();
+    private final IntegerProperty y = new SimpleIntegerProperty(); //Значение поля должно быть больше -258, Поле не может быть null
 
     public Coordinates(Long x, Integer y) {
-        this.x = x;
-        this.y = y;
+        this.x.set(x);
+        this.y.set(y);
     }
+    public Coordinates() {}
 
-    public Coordinates() {
+    public long getX() { return x.get(); }
+    public void setX(long value) { x.set(value); }
+    public LongProperty xProperty() { return x; }
 
-    }
-
-    public void setX(Long x) {
-        this.x = x;
-    }
-    public void setY(Integer y) {
-        this.y = y;
-    }
-
-    public Long getX() {
-        return x;
-    }
-    public Integer getY() {
-        return y;
-    }
+    // --- Y ---
+    public int getY() { return y.get(); }
+    public void setY(int value) { y.set(value); }
+    public IntegerProperty yProperty() { return y; }
 
 
 
