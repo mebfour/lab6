@@ -53,7 +53,9 @@ public class BDReader {
                     route.setName(rs.getString("name"));
                     route.setCoordinates(coordinates);
                     java.sql.Timestamp timestamp = rs.getTimestamp("creation_date");
-                    if (timestamp != null) route.setCreationDate(new Date(timestamp.getTime()));
+                    if (timestamp != null) {
+                        route.setCreationDate(new Date(timestamp.getTime())); // ✅ Теперь всё правильно
+                    }
                     else route.setCreationDate(null);
 
                     route.setTo(to);

@@ -14,6 +14,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+
 
 import static ToStart.PasswordUtil.hashPassword;
 import static ToStart.UserSession.currentUsername;
@@ -37,7 +38,6 @@ public class ClientNetworkManager {
     private volatile CommandResponse lastResponse = null;
     private SocketChannel socketChannel;    //  Каждый SocketChannel, зарегистрированный в Selector, имеет связанный объект SelectionKey
     private Selector selector;      //  позволяет одному потоку ожидать событий на множестве открытых каналов.
-    private  final Gson gson = new Gson();
     private final Scanner scanner = new Scanner(System.in);
     private final ByteBuffer readLengthBuffer = ByteBuffer.allocate(4); // для чтения длины
     private ByteBuffer readDataBuffer = null; // для чтения данных сообщения
@@ -47,11 +47,11 @@ public class ClientNetworkManager {
     private CountDownLatch responseLatch;
     public static CommandResponse routeResponse;
     private final SimpleObjectProperty<CommandResponse> commandResponse = new SimpleObjectProperty<>();
+    private final Gson gson = new Gson();
 
     public ObjectProperty<CommandResponse> commandResponseProperty() {
         return commandResponse;
     }
-
     private final ObjectProperty<CommandResponse> routeResponseProperty = new SimpleObjectProperty<>();
 
     public ObjectProperty<CommandResponse> routeResponseProperty() {
@@ -62,6 +62,9 @@ public class ClientNetworkManager {
         routeResponseProperty.set(response);
     }
 
+    public Gson getGson() {
+        return gson;
+    }
 
 
 
@@ -251,16 +254,44 @@ public class ClientNetworkManager {
     }
 
     public void loadRoutesFromMapAsync() {
-        KeyboardInputProvider provider = new KeyboardInputProvider(scanner);
-        String[] parts = "get_routes".split(" ");
+
+            KeyboardInputProvider provider = new KeyboardInputProvider(scanner);
+            String[] parts = "get_routes".split(" ");
+            try {
+                ClientCommandList commandList = ClientCommandList.create(socketChannel, gson, sendMessage, this::checkIdOnServer);
+                processCommand(parts, provider, scanner, commandList, sendMessage);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    public void sendCommand(String commandName, String key, String username) {
+        CommandRequest request = new CommandRequest(commandName, key, username);
+        String json = gson.toJson(request);
         try {
-            ClientCommandList commandList = ClientCommandList.create(socketChannel, gson, sendMessage, this::checkIdOnServer);
-            processCommand(parts, provider, scanner, commandList, sendMessage);
+            sendMessage(json);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Ошибка сети");
+                alert.setHeaderText(null);
+                alert.setContentText("Не удалось отправить команду на сервер.");
+                alert.showAndWait();
+            });
+        }
+
+    }
+    public void sendGetRoutesCommand() {
+        CommandRequest request = new CommandRequest("get_routes", "", currentUsername);
+        String json = gson.toJson(request);
+
+        try {
+            sendMessage(json);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-
     public ObservableList<RouteDTO> loadRoutesFromMap() {
         // Преобразуем Map в ObservableList
         if (lastResponse != null) {

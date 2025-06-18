@@ -12,11 +12,14 @@ public class Route {
     private Location to; //Поле может быть null
     private String key;
 
+
     public Route() {}
 
-    public Route(int id, String name, Coordinates coordinates, Date creationDate, Location from, Location to) {
+    public Route(String key, int id, String name, String owner, Coordinates coordinates, Date creationDate, Location from, Location to) {
+        this.key = key;
         this.id = id;
         this.name = name;
+        this.owner = owner;
         this.coordinates = coordinates;
         this.creationDate = creationDate;
         this.from = from;

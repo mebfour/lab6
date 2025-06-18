@@ -2,10 +2,14 @@ package ToStart;
 
 import Classes.RouteDTO;
 import InputHandler.JsonToRouteMapper;
+import InputHandler.RouteInputDialog;
+import com.google.gson.Gson;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.canvas.Canvas;
@@ -21,28 +25,91 @@ import javafx.util.Duration;
 import paint.MyBoundingBox;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+
+
 
 public class MainWindowController {
 
     private final BorderPane root = new BorderPane();
     private final ObservableList<RouteDTO> data = FXCollections.observableArrayList();
     private final TableView<RouteDTO> tableView = new TableView<>(data);
-    private final ClientNetworkManager clientNetworkManager;
+
     private final String currentUser;
     private Map<String, RouteDTO> routeMap = new LinkedHashMap<>();
     private Canvas canvas;
     private final Map<String, Paint> userColors = new HashMap<>();
     private final Random random = new Random();
 
+    private final Gson gson;
+    private final ClientNetworkManager clientNetworkManager;
+    Consumer<String> sendMessage;
+    private final AtomicBoolean mapIsLoad = new AtomicBoolean(false);
+    private boolean initialLoadDone = false;
+
+
     public MainWindowController(ClientNetworkManager clientNetworkManager, String username) {
         this.clientNetworkManager = clientNetworkManager;
+        this.sendMessage = clientNetworkManager.getSendMessage();
+        this.gson = clientNetworkManager.getGson();
         this.currentUser = username;
-        this.canvas  = new Canvas(800, 600);
+        this.canvas  = new Canvas(800, 300);
         this.canvas.setWidth(600);
         setupTable();
         Label userLabel = new Label("Пользователь: " + username);
         Button addButton = new Button("Добавить");
+        addButton.setOnAction(event -> {
+            RouteInputDialog dialog = new RouteInputDialog(username, gson, sendMessage);
+            dialog.showAndSend(); // отправляем add-команду
+
+            // Подписываемся на ответ от сервера
+            ChangeListener<CommandResponse> listener = new ChangeListener<>() {
+                @Override
+                public void changed(ObservableValue<? extends CommandResponse> obs, CommandResponse oldVal, CommandResponse newVal) {
+                    if (newVal != null && newVal.isSuccess()) {
+                        // Только после успешного выполнения add — запрашиваем обновление данных
+                        clientNetworkManager.sendGetRoutesCommand();
+
+                    }
+                    // Отписываемся после первого срабатывания
+                    clientNetworkManager.commandResponseProperty().removeListener(this);
+                }
+            };
+
+            // Подписываем слушатель
+            clientNetworkManager.commandResponseProperty().addListener(listener);
+            clientNetworkManager.loadRoutesFromMapAsync();
+        });
         Button removeButton = new Button("Удалить");
+        removeButton.setOnAction(event -> {
+            RouteDTO selectedRoute = tableView.getSelectionModel().getSelectedItem();
+            if (selectedRoute != null) {
+                String key = selectedRoute.getKey();
+
+                ChangeListener<CommandResponse> listener = new ChangeListener<>() {
+                    @Override
+                    public void changed(ObservableValue<? extends CommandResponse> obs, CommandResponse oldVal, CommandResponse newVal) {
+                        if (newVal != null && newVal.isSuccess()) {
+                            clientNetworkManager.sendGetRoutesCommand(); // Запрашиваем новые данные
+                        }
+                        clientNetworkManager.commandResponseProperty().removeListener(this); // Теперь this — это слушатель
+                    }
+                };
+
+                clientNetworkManager.commandResponseProperty().addListener(listener);
+                clientNetworkManager.sendCommand("remove_by_key", key, username);
+
+
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Ничего не выбрано");
+                alert.setHeaderText(null);
+                alert.setContentText("Выберите маршрут для удаления.");
+                alert.showAndWait();
+            }
+            clientNetworkManager.loadRoutesFromMapAsync();
+        });
 
         HBox buttonBox = new HBox(10, addButton, removeButton);
 
@@ -65,7 +132,7 @@ public class MainWindowController {
                 }
             }
         });
-        drawRoutes();
+
 
         //  HBox для горизонтального размещения ---
         HBox hBox = new HBox(10); // 10 — отступ между элементами
@@ -76,48 +143,34 @@ public class MainWindowController {
         root.setCenter(hBox);
         root.setBottom(buttonBox);
 
-
-        // Подписка на изменение routeResponse
         clientNetworkManager.routeResponseProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 String jsonArgs = newVal.getMessage();
                 if (jsonArgs != null && jsonArgs.trim().startsWith("{")) {
                     try {
                         routeMap = JsonToRouteMapper.parseJsonToRouteMap(jsonArgs);
-                        Platform.runLater(() -> {
-                            updateTable();
-                            drawRoutes(); // Обновляем Canvas
-                        });
+                        Platform.runLater(this::updateTableAndCanvas);
+                        System.out.println("Коллекция обновилась — обновляем UI");
                     } catch (Exception e) {
                         e.printStackTrace();
-                        System.err.println("Ошибка парсинга JSON");
                     }
                 }
             }
         });
 
-// Перед загрузкой маршрутов подписываемся на ответ команды
+// --- Подписка на commandResponse (для remove_by_key и других команд) ---
         clientNetworkManager.commandResponseProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.isSuccess()) {
-                String json = newVal.getMessage();
-                System.out.println("JSON из commandResponse: " + json);
-                if (json != null && !json.trim().isEmpty()) {
-                    try {
-                        System.out.println("Попытка парсить JSON: " + json);
-                        routeMap = JsonToRouteMapper.parseJsonToRouteMap(json);
-                        System.out.println("Размер routeMap после парсинга: " + routeMap.size());
-                        Platform.runLater(() -> updateTable());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        System.err.println("Ошибка парсинга JSON");
-                    }
-                }
+            if (newVal != null && newVal.isSuccess() && (!initialLoadDone)) {
+                // ВСЕГДА запрашиваем актуальные данные после успешной команды
+                clientNetworkManager.sendGetRoutesCommand();
             }
         });
-
-
-        clientNetworkManager.loadRoutesFromMapAsync();
-
+        if (!initialLoadDone) {
+            initialLoadDone = true;
+            System.out.println("Первоначальная загрузка маршрутов...");
+            //clientNetworkManager.sendGetRoutesCommand();
+            clientNetworkManager.loadRoutesFromMapAsync();
+        }
 
         // Рисуем простой фон на canvas
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -131,7 +184,11 @@ public class MainWindowController {
     public BorderPane getView() {
         return root;
     }
-
+    private void updateTableAndCanvas() {
+        ObservableList<RouteDTO> routeList = FXCollections.observableArrayList(routeMap.values());
+        tableView.setItems(routeList);
+        drawRoutes();
+    }
     private void setupTable() {
         // Настройка колонок происходит один раз
         TableColumn<RouteDTO, Integer> idCol = new TableColumn<>("ID");
@@ -194,43 +251,40 @@ public class MainWindowController {
 
     private void drawRoutes() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
-
-        // Очищаем Canvas
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // Рисуем фон
+        // Фон
         gc.setFill(Color.LIGHTGRAY);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // Масштабирование координат
-        double scale = 10; // Увеличиваем координаты в 10 раз
-
-        // Цвета по владельцам
-        Map<String, Paint> userColors = new HashMap<>();
+        double scale = 10;
+        userColors.clear(); // можно очищать или нет — зависит от поведения
 
         for (RouteDTO route : routeMap.values()) {
             double x = route.getX() * scale;
             double y = route.getY() * scale;
             String owner = route.getOwner();
 
-            // Получаем цвет для владельца
-            userColors.putIfAbsent(owner, getRandomColor());
+            // Получаем или создаём цвет для владельца
+            if (!userColors.containsKey(owner)) {
+                userColors.put(owner, getRandomColor());
+            }
+
             Paint color = userColors.get(owner);
 
             // Рисуем точку
             gc.setFill(color);
             gc.fillOval(x - 5, y - 5, 10, 10);
 
-            // Добавляем текст: ID маршрута
+            // Текст с ID
             gc.setFill(Color.BLACK);
             gc.fillText(String.valueOf(route.getId()), x + 8, y + 4);
 
-            // Сохраняем "объект" как прямоугольник для проверки клика
+            // Сохраняем область клика
             route.setBoundingBox(new MyBoundingBox(x, y, 10, 10, route));
         }
 
-        // Рисуем легенду справа
-        drawLegend(gc, userColors);
+        drawLegend(gc, userColors); // передаём одну и ту же карту
     }
     private void showRouteInfo(RouteDTO route) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -279,4 +333,5 @@ public class MainWindowController {
             legendY += 30; // Сдвигаем следующий элемент
         }
     }
+
 }

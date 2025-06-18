@@ -3,23 +3,31 @@ package Commands.BaseCom;
 import Classes.Route;
 import Classes.RouteDTO;
 import Collection.RouteCollectionManager;
+import Commands.BDProcessing.BDReader;
 import Commands.Command;
 import Commands.CommandResponse;
 import com.google.gson.Gson;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static Collection.RouteCollectionManager.routeList;
 
+
 public class GetRoutesCommand implements Command {
+
     Gson gson = new Gson();
-    String json = gson.toJson(convertToDTOs(routeList));
+
 
     @Override
     public CommandResponse execute(String args) {
-        if (!routeList.isEmpty()) {
-
+        Map<String, Route> routeMap = BDReader.readRoutesFromBd().getRouteMap();
+        if (!routeMap.isEmpty()) {
+            String json = gson.toJson(convertToDTOs(routeMap));
+            System.out.println("from BD: " + json);
+            System.out.println("local когда отправляем: " + routeList);
             return new CommandResponse(json, true);
         } else {
             return new CommandResponse("Коллекция пуста! Введите add для добавления нового элемента.", false);
@@ -35,7 +43,7 @@ public class GetRoutesCommand implements Command {
         return dtos;
     }
 
-    private RouteDTO convertToDTO(Route route) {
+    public static RouteDTO convertToDTO(Route route) {
         RouteDTO dto = new RouteDTO(
                 route.getId(),
                 route.getName(),
