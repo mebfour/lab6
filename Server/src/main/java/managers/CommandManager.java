@@ -1,7 +1,5 @@
 package managers;
 
-
-
 import Collection.RouteCollectionManager;
 import Commands.*;
 import Commands.BaseCom.CheckIdCommand;

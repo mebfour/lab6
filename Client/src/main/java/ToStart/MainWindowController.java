@@ -33,6 +33,7 @@ import java.util.function.Consumer;
 public class MainWindowController {
 
     private final BorderPane root = new BorderPane();
+
     private final ObservableList<RouteDTO> data = FXCollections.observableArrayList();
     private final TableView<RouteDTO> tableView = new TableView<>(data);
 
@@ -61,7 +62,7 @@ public class MainWindowController {
         Button addButton = new Button("Добавить");
         addButton.setOnAction(event -> {
             RouteInputDialog dialog = new RouteInputDialog(username, gson, sendMessage);
-            dialog.showAndSend(); // отправляем add-команду
+            dialog.showAndSendAdd(); // отправляем add-команду
 
             // Подписываемся на ответ от сервера
             ChangeListener<CommandResponse> listener = new ChangeListener<>() {
@@ -110,8 +111,50 @@ public class MainWindowController {
             }
             clientNetworkManager.loadRoutesFromMapAsync();
         });
+        Button editButton = new Button("Редактировать");
+        editButton.setOnAction(event -> {
+            RouteDTO selectedRoute = tableView.getSelectionModel().getSelectedItem();
+            if (selectedRoute != null) {
+                if (!selectedRoute.getOwner().equals(username)) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Ошибка");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Вы не можете редактировать чужие маршруты.");
+                    alert.showAndWait();
+                    return;
+                }
 
-        HBox buttonBox = new HBox(10, addButton, removeButton);
+                // Открываем диалог редактирования
+                RouteInputDialog dialog = new RouteInputDialog(username, gson, sendMessage);
+                dialog.setRouteData(selectedRoute); // Предзаполняем поля
+                dialog.showAndSendUpdate(selectedRoute);
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Ничего не выбрано");
+                alert.setHeaderText(null);
+                alert.setContentText("Выберите маршрут для редактирования.");
+                alert.showAndWait();
+            }
+            // Подписываемся на ответ от сервера
+            ChangeListener<CommandResponse> listener = new ChangeListener<>() {
+                @Override
+                public void changed(ObservableValue<? extends CommandResponse> obs, CommandResponse oldVal, CommandResponse newVal) {
+                    if (newVal != null && newVal.isSuccess()) {
+                        // Только после успешного выполнения add — запрашиваем обновление данных
+                        clientNetworkManager.sendGetRoutesCommand();
+
+                    }
+                    // Отписываемся после первого срабатывания
+                    clientNetworkManager.commandResponseProperty().removeListener(this);
+                }
+            };
+
+            // Подписываем слушатель
+            clientNetworkManager.commandResponseProperty().addListener(listener);
+            clientNetworkManager.loadRoutesFromMapAsync();
+        });
+
+        HBox buttonBox = new HBox(10, addButton, removeButton, editButton);
 
         // Устанавливаем минимальную ширину таблицы и максимальную для растяжения
         tableView.setMinWidth(400);

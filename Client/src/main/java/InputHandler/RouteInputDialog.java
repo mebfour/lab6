@@ -14,6 +14,8 @@ import com.google.gson.Gson;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static ToStart.UserSession.currentUsername;
+
 public class RouteInputDialog {
     private final Dialog<Route> dialog;
     private final String currentUsername;
@@ -94,6 +96,20 @@ public class RouteInputDialog {
                 )
         );
         return dialog;
+    }
+
+    public void setRouteData(RouteDTO route) {
+        nameField.setText(route.getName());
+        coordXField.setText(String.valueOf(route.getX()));
+        coordYField.setText(String.valueOf(route.getY()));
+        fromNameField.setText(route.getFromName());
+        fromXField.setText(String.valueOf(route.getFromX()));
+        fromYField.setText(String.valueOf(route.getFromY()));
+        fromZField.setText(String.valueOf(route.getFromZ()));
+        toNameField.setText(route.getToName());
+        toXField.setText(String.valueOf(route.getToX()));
+        toYField.setText(String.valueOf(route.getToY()));
+        toZField.setText(String.valueOf(route.getToZ()));
     }
 
     private GridPane createInputGrid() {
@@ -245,7 +261,7 @@ public class RouteInputDialog {
         alert.showAndWait();
     }
 
-    public void showAndSend() {
+    public void showAndSendAdd() {
         Optional<Route> result = dialog.showAndWait();
 
         if (result.isPresent()) {
@@ -256,15 +272,12 @@ public class RouteInputDialog {
             CommandRequest commandRequest = new CommandRequest("add", jsonRoute, currentUsername);
             RouteDTO dto = convertToDTO(route);
             dto.setOwner(currentUsername);
-
-            System.out.println("Route owner: " + route.getOwner());
-            System.out.println("DTO owner: " + dto.getOwner()); // должен вывести имя пользователя
             String json = gson.toJson(dto);
-            System.out.println("JSON: " + json); // должен содержать "owner":"..."
             String jsonRequest = gson.toJson(commandRequest);
             sendMessage.accept(jsonRequest);
         }
     }
+
     public static RouteDTO convertToDTO(Route route) {
         RouteDTO dto = new RouteDTO(
                 route.getId(),
@@ -285,5 +298,21 @@ public class RouteInputDialog {
         );
         dto.setOwner(route.getOwner());
         return dto;
+    }
+    public void showAndSendUpdate(RouteDTO oldRoute) {
+        Optional<Route> result = dialog.showAndWait();
+
+        if (result.isPresent()) {
+            Route route = result.get();
+            System.out.println("id " + route.getId());
+            System.out.println("key" + route.getKey());
+            route.setOwner(currentUsername);
+            route.setId(oldRoute.getId());
+            route.setKey(oldRoute.getKey());
+            String updateJson = gson.toJson(convertToDTO(route));
+            System.out.println(updateJson);
+            CommandRequest updateRequest = new CommandRequest("update_id", updateJson, currentUsername);
+            sendMessage.accept(gson.toJson(updateRequest));
+        }
     }
 }

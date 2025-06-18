@@ -112,8 +112,6 @@ public class RouteCollectionManager {
                 }
             }
 
-
-
             // Добавляем в коллекцию
             collectionManager.addToCollection(route);
         }catch (SQLException e) {

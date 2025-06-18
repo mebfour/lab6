@@ -1,11 +1,15 @@
 package Commands.Modif;
 
+import Classes.Coordinates;
+import Classes.Location;
 import Classes.Route;
+import Classes.RouteDTO;
 import Collection.RouteCollectionManager;
 import Commands.Command;
 import Commands.CommandResponse;
 import com.google.gson.Gson;
 
+import java.util.Date;
 import java.util.Map;
 
 import static Collection.RouteCollectionManager.routeList;
@@ -22,14 +26,24 @@ public class UpdateId implements Command {
     public CommandResponse execute(String jsonArgs) {
         try {
             // Десериализация объекта с новыми данными и id
-            Route updatedRoute = gson.fromJson(jsonArgs, Route.class);
+            RouteDTO dto = gson.fromJson(jsonArgs, RouteDTO.class);
+            Route updatedRoute = new Route(
+                    dto.getKey(),
+                    dto.getId(),
+                    dto.getName(),
+                    dto.getOwner(),
+                    new Coordinates(dto.getX(), dto.getY()),
+                    new Date(dto.getCreationDate()), // преобразуем long -> Date
+                    new Location(dto.getFromX(), dto.getFromY(), dto.getFromZ(), dto.getFromName()),
+                    new Location(dto.getToX(), dto.getToY(), dto.getToZ(), dto.getToName())
+            );
             int id = updatedRoute.getId();
             boolean findId = false;
 
-            String key = null;
+            String key = updatedRoute.getKey();
             synchronized(routeList) {
                 for (Map.Entry<String, Route> entry : routeList.entrySet()) {
-                    if (entry.getValue().getId() == id) {
+                    if (entry.getValue().getKey().equals(key)) {
                         key = entry.getKey();
                         findId = true;
                         break;
@@ -51,6 +65,8 @@ public class UpdateId implements Command {
             }
 
         } catch (Exception e) {
+            //удали
+            e.printStackTrace();
             return new CommandResponse("Ошибка обновления элемента.", false);
         }
     }
