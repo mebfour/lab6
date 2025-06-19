@@ -12,14 +12,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-
 import java.io.IOException;
-
 
 public class Start extends Application {
     private ClientNetworkManager clientNetworkManager = new ClientNetworkManager();
-
-
 
     @Override
     public void start(Stage primaryStage) {
@@ -36,8 +32,6 @@ public class Start extends Application {
                 });
             }
         }).start();
-
-
 
         authButton.setOnAction(event -> {
             String username = loginField.getText().trim();

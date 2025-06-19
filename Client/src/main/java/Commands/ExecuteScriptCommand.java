@@ -1,8 +1,6 @@
 package Commands;
 
-import InputHandler.InputProvider;
 import com.google.gson.Gson;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,26 +21,10 @@ public class ExecuteScriptCommand implements ClientCommand {
         this.callStack = callStack;
     }
 
-
-
-
     @Override
-    public void clientExecute(String[] args, String pars, InputProvider provider, Scanner scanner) throws IOException {
+    public void clientExecute(String[] args, String pars) throws IOException {
 
-        String filePath = (args.length > 1 && args[0] != null && !args[0].trim().isEmpty())
-                ? String.join(" ", Arrays.asList(args).subList(1, args.length))
-                : askFilePath();
-
-        if (!new java.io.File(filePath).exists()) {
-            System.out.println("Файл не найден: " + filePath);
-
-        }
-        if (callStack.contains(filePath)) {
-            System.out.println("Рекурсивный вызов скрипта обнаружен. Скрипт не будет выполнен повторно: " + filePath);
-        }
-
-        callStack.add(filePath);
-
+        String filePath = args[0];
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -62,7 +44,7 @@ public class ExecuteScriptCommand implements ClientCommand {
                     }
                     // Рекурсивно собираем команды из вложенного скрипта
                     new ExecuteScriptCommand(gson, sendMessage, scriptCommands, callStack)
-                            .clientExecute(args, pars, provider, scanner);
+                            .clientExecute(args, pars);
 
                     callStack.remove(filePath);
                     continue;
@@ -76,13 +58,6 @@ public class ExecuteScriptCommand implements ClientCommand {
             callStack.remove(filePath);
         }
     }
-
-
-    private String askFilePath() {
-        System.out.print("Введите путь к файлу: ");
-        return new java.util.Scanner(System.in).nextLine().trim();
-    }
-
 
     public static class Pair<K, V> {
         public final K key;

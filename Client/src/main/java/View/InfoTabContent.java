@@ -5,7 +5,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
@@ -18,10 +17,10 @@ public class InfoTabContent {
     private final Label dateLabel = new Label();
 
     public InfoTabContent(ObjectProperty<Map<String, RouteDTO>> routeMapProperty) {
-        // --- Стили ---
+        //  Стили
         content.setStyle("-fx-padding: 10; -fx-font-size: 14px;");
 
-        // --- Список команд ---
+        // список команд
         Label commandsLabel = new Label("Доступные команды:");
         ListView<String> commandsView = new ListView<>();
         commandsView.getItems().addAll(
@@ -31,7 +30,7 @@ public class InfoTabContent {
         );
         commandsView.setPrefHeight(100);
 
-        // --- Информация о коллекции ---
+        // информация о коллекции
         Label collectionInfoLabel = new Label("Информация о коллекции:");
         Label typeLabel = new Label("Тип: Map<String, RouteDTO>");
 
@@ -41,7 +40,7 @@ public class InfoTabContent {
                 dateLabel
         );
 
-        // --- Добавляем всё во вкладку ---
+        // Добавляем всё во вкладку
         content.getChildren().addAll(commandsLabel, commandsView, collectionInfoLabel, collectionBox);
 
         // Подписка на изменение routeMap
@@ -66,8 +65,8 @@ public class InfoTabContent {
         }
     }
 
-    public Tab getTab(Tab infoTab) {
-        infoTab = new Tab(Localization.getString("information"));
+    public Tab getTab() {
+        Tab infoTab = new Tab(Localization.getString("information"));
         infoTab.setClosable(false);
         BorderPane tabContent = new BorderPane();
         tabContent.setCenter(content);

@@ -3,7 +3,6 @@ package Classes;
 import View.MyBoundingBox;
 
 public class RouteDTO {
-
     private int id;
     private String name;
     private long x;
@@ -20,7 +19,6 @@ public class RouteDTO {
     private String toName;
     private String key;
     private MyBoundingBox myBoundingBox;
-
 
 
     public RouteDTO(int id, String name, long x, int y, String owner, long creationDate, float fromX, int fromY, int fromZ, String fromName,  float toX, int toY, int toZ, String toName, String key) {
@@ -53,7 +51,6 @@ public class RouteDTO {
             default -> "";
         };
     }
-        // Геттеры и сеттеры
 
     public int getId() {
         return id;
@@ -94,7 +91,6 @@ public class RouteDTO {
     public void setOwner(String owner) {
         this.owner = owner;
     }
-
 
     public long getCreationDate() {
         return creationDate;

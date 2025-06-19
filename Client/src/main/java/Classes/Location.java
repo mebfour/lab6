@@ -1,6 +1,5 @@
 package Classes;
 
-
 public class Location {
 
     private float x;
@@ -15,9 +14,7 @@ public class Location {
         this.name = name;
     }
 
-    public Location() {
-
-    }
+    public Location() {}
 
     public float getX() {
         return x;

@@ -9,7 +9,6 @@ public class MyBoundingBox {
     private final double height;
     private final RouteDTO route;
 
-    // Конструктор, который ты используешь
     public MyBoundingBox(double x, double y, double width, double height, RouteDTO route) {
         this.x = x;
         this.y = y;

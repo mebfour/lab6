@@ -10,7 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.*;
 import com.google.gson.Gson;
-
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -40,8 +39,6 @@ public class RouteInputDialog {
     private TextField fromYField;
     private TextField fromZField;
 
-
-
     private Dialog<Route> createDialog() {
         Dialog<Route> dialog = new Dialog<>();
         dialog.setTitle("Добавление нового маршрута");
@@ -49,10 +46,9 @@ public class RouteInputDialog {
 
         ButtonType addButtonType = new ButtonType("Добавить", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
-
         dialog.getDialogPane().setContent(createInputGrid());
 
-        // НЕ ЗАКРЫВАЙТЕ ДИАЛОГ СРАЗУ — делаем кастомный конвертер
+        // сразу диалог не закрываем
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == addButtonType) {
                 Route route = createRouteFromInput();
@@ -116,7 +112,7 @@ public class RouteInputDialog {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        // Создаем и добавляем все поля ввода
+        // создание и добавленме всех полей ввода
         nameField = new TextField();
         coordXField = new TextField();
         coordYField = new TextField();
@@ -129,7 +125,7 @@ public class RouteInputDialog {
         fromYField = new TextField();
         fromZField = new TextField();
 
-        // Добавляем подсказки для полей
+        // подсказки для полей
         nameField.setPromptText("Название маршрута");
         coordXField.setPromptText("Координата X (long)");
         coordYField.setPromptText("Координата Y (int)");
@@ -192,7 +188,7 @@ public class RouteInputDialog {
         return grid;
     }
 
-    // Метод для добавления валидации числовых полей
+    // для добавления валидации числовых полей
     private void addNumericValidation(TextField field, String regex) {
         field.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches(regex)) {
@@ -270,7 +266,6 @@ public class RouteInputDialog {
             CommandRequest commandRequest = new CommandRequest("add", jsonRoute, currentUsername);
             RouteDTO dto = convertToDTO(route);
             dto.setOwner(currentUsername);
-            String json = gson.toJson(dto);
             String jsonRequest = gson.toJson(commandRequest);
             sendMessage.accept(jsonRequest);
         }

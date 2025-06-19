@@ -3,7 +3,6 @@ package ToStart;
 import Classes.RouteDTO;
 import InputHandler.JsonToRouteMapper;
 import InputHandler.RouteInputDialog;
-
 import InputHandler.ScriptInputDialog;
 import View.InfoTabContent;
 import View.Localization;
@@ -30,7 +29,6 @@ import javafx.scene.paint.Paint;
 import javafx.util.Duration;
 import View.MyBoundingBox;
 import javafx.scene.control.TabPane;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -42,16 +40,13 @@ public class MainWindowController {
     private Tab mainTab;
     private Tab infoTab;
     private final TabPane tabPane = new TabPane();
-
     private final ObservableList<RouteDTO> data = FXCollections.observableArrayList();
     private final TableView<RouteDTO> tableView = new TableView<>(data);
-
     private final String currentUser;
     private Map<String, RouteDTO> routeMap = new LinkedHashMap<>();
     private Canvas canvas;
     private final Map<String, Paint> userColors = new HashMap<>();
     private final Random random = new Random();
-
     private final Gson gson;
     private final ClientNetworkManager clientNetworkManager;
     Consumer<String> sendMessage;
@@ -62,7 +57,6 @@ public class MainWindowController {
     public ObjectProperty<Map<String, RouteDTO>> routeMapProperty() {
         return routeMapProperty;
     }
-
 
     public MainWindowController(ClientNetworkManager clientNetworkManager, String username) {
         this.clientNetworkManager = clientNetworkManager;
@@ -171,7 +165,6 @@ public class MainWindowController {
                     alert.showAndWait();
                     return;
                 }
-
                 // Открываем диалог редактирования
                 RouteInputDialog dialog = new RouteInputDialog(username, gson, sendMessage);
                 dialog.setRouteData(selectedRoute); // Предзаполняем поля
@@ -190,7 +183,7 @@ public class MainWindowController {
                     if (newVal != null && newVal.isSuccess()) {
                         // Только после успешного выполнения add — запрашиваем обновление данных
                         clientNetworkManager.sendGetRoutesCommand();
-
+                        clientNetworkManager.loadRoutesFromMapAsync();
                     }
                     // Отписываемся после первого срабатывания
                     clientNetworkManager.commandResponseProperty().removeListener(this);
@@ -200,6 +193,7 @@ public class MainWindowController {
             // Подписываем слушатель
             clientNetworkManager.commandResponseProperty().addListener(listener);
             clientNetworkManager.loadRoutesFromMapAsync();
+
         });
 
         HBox buttonBox = new HBox(10, addButton, removeButton, editButton, scriptButton);
@@ -208,9 +202,6 @@ public class MainWindowController {
         tableView.setMinWidth(400);
         tableView.setMaxWidth(Double.MAX_VALUE);
         // Устанавливаем фиксированную ширину Canvas
-
-        // --- Создаем HBox для горизонтального размещения --
-
 
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             double mouseX = event.getX();
@@ -224,7 +215,6 @@ public class MainWindowController {
             }
         });
 
-
         // Создаем первую вкладку с таблицей и картой
         this.mainTab = new Tab(Localization.getString("routes"));
         mainTab.setClosable(false); // Запрещаем закрывать вкладку
@@ -237,18 +227,15 @@ public class MainWindowController {
         mainContent.setBottom(buttonBox);
         mainTab.setContent(mainContent);
 
-// Создаем вторую вкладку
-
 
         InfoTabContent infoTabContent = new InfoTabContent(routeMapProperty());
-        this.infoTab = infoTabContent.getTab(this.infoTab);
+        this.infoTab = infoTabContent.getTab();
 
-// Добавляем обе вкладки в TabPane
         tabPane.getTabs().addAll(mainTab, infoTab);
         ChoiceBox<Locale> languageSelector = new ChoiceBox<>();
         languageSelector.getItems().addAll(Localization.getSupportedLocales());
 
-// Устанавливаем текущую локаль
+        // Устанавливаем текущую локаль
         languageSelector.setValue(Locale.getDefault());
 
         languageSelector.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -257,7 +244,7 @@ public class MainWindowController {
                 updateUILanguage(userLabel, addButton, editButton,removeButton, scriptButton); // Обновляем элементы интерфейса
             }
         });
-// Устанавливаем TabPane как основное содержимое root
+        // Устанавливаем TabPane как основное содержимое root
         HBox topPanel = new HBox(10, userLabel, languageSelector);
         topPanel.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         root.setTop(topPanel);
@@ -268,7 +255,7 @@ public class MainWindowController {
                 String jsonArgs = newVal.getMessage();
                 if (jsonArgs != null && jsonArgs.trim().startsWith("{")) {
                     try {
-                        routeMap = JsonToRouteMapper.parseJsonToRouteMap(jsonArgs);
+                        routeMap = JsonToRouteMapper.parseJsonToRouteMap();
                         Platform.runLater(this::updateTableAndCanvas);
                         System.out.println("Коллекция обновилась — обновляем UI");
                     } catch (Exception e) {
@@ -278,7 +265,7 @@ public class MainWindowController {
             }
         });
 
-// --- Подписка на commandResponse (для remove_by_key и других команд) ---
+        // Подписка на commandResponse (для remove_by_key и других команд)
         clientNetworkManager.commandResponseProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.isSuccess() && (!initialLoadDone)) {
                 // ВСЕГДА запрашиваем актуальные данные после успешной команды
@@ -290,7 +277,7 @@ public class MainWindowController {
                 String jsonArgs = newVal.getMessage();
                 if (jsonArgs != null && jsonArgs.trim().startsWith("{")) {
                     try {
-                        routeMap = JsonToRouteMapper.parseJsonToRouteMap(jsonArgs);
+                        routeMap = JsonToRouteMapper.parseJsonToRouteMap();
                         Platform.runLater(() -> {
                             updateTableAndCanvas();
                         });
@@ -303,7 +290,6 @@ public class MainWindowController {
         if (!initialLoadDone) {
             initialLoadDone = true;
             System.out.println("Первоначальная загрузка маршрутов...");
-            //clientNetworkManager.sendGetRoutesCommand();
             clientNetworkManager.loadRoutesFromMapAsync();
         }
 
@@ -340,7 +326,6 @@ public class MainWindowController {
                 case "Ключ": col.setText(Localization.getString("key")); break;
             }
         }
-
         // Обновление заголовков вложенных колонок
         for (TableColumn<RouteDTO, ?> parentCol : tableView.getColumns()) {
             if (parentCol instanceof TableColumn<?, ?>) {
@@ -365,7 +350,7 @@ public class MainWindowController {
         ObservableList<RouteDTO> routeList = FXCollections.observableArrayList(routeMap.values());
         tableView.setItems(routeList);
         drawRoutes();
-        this.routeMapProperty.set(routeMap); // <-- Уведомляем слушателей
+        this.routeMapProperty.set(routeMap); // Уведомляем слушателей
     }
     private void setupTable() {
         // Колонка ID
@@ -425,10 +410,6 @@ public class MainWindowController {
         // Устанавливаем пустой список на старте
         tableView.setItems(FXCollections.observableArrayList());
     }
-    private void updateTable() {
-        ObservableList<RouteDTO> routeList = FXCollections.observableArrayList(routeMap.values());
-        tableView.setItems(routeList);
-    }
     private TableColumn<RouteDTO, String> createSubColumn(String title, String field) {
         TableColumn<RouteDTO, String> col = new TableColumn<>(title);
         col.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getByKey(field)));
@@ -451,7 +432,6 @@ public class MainWindowController {
             double y = route.getY() * scale;
             String owner = route.getOwner();
 
-            // Получаем или создаём цвет для владельца
             if (!userColors.containsKey(owner)) {
                 userColors.put(owner, getRandomColor());
             }
@@ -469,7 +449,6 @@ public class MainWindowController {
             // Сохраняем область клика
             route.setBoundingBox(new MyBoundingBox(x, y, 10, 10, route));
         }
-
         drawLegend(gc, userColors); // передаём одну и ту же карту
     }
     private void showRouteInfo(RouteDTO route) {
@@ -485,19 +464,7 @@ public class MainWindowController {
         );
         alert.showAndWait();
     }
-    private void startPulseAnimation(GraphicsContext gc, double x, double y, Paint color) {
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.millis(500),
-                        e -> {
-                            double scale = 1 + Math.sin(System.currentTimeMillis() / 300.0) * 0.5;
-                            gc.setFill(color);
-                            gc.fillOval(x - 5 * scale, y - 5 * scale, 10 * scale, 10 * scale);
-                        }
-                )
-        );
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-    }
+
     private Paint getRandomColor() {
         return Color.hsb(random.nextInt(360), 0.8, 0.9);
     }
@@ -519,5 +486,4 @@ public class MainWindowController {
             legendY += 30; // Сдвигаем следующий элемент
         }
     }
-
 }

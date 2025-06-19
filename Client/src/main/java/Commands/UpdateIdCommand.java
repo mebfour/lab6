@@ -1,13 +1,9 @@
 package Commands;
 
 import Classes.Route;
-import InputHandler.InputProvider;
-import InputHandler.inputObject;
 import ToStart.CommandRequest;
 import com.google.gson.Gson;
-
 import java.io.IOException;
-import java.util.Scanner;
 import java.util.function.Consumer;
 
 import static ToStart.UserSession.currentUsername;
@@ -15,7 +11,7 @@ import static ToStart.UserSession.currentUsername;
 public class UpdateIdCommand implements ClientCommand {
     private final Gson gson;
     private final Consumer<String> sendMessage;
-    private IdChecker checkIdOnServer;
+    private final IdChecker checkIdOnServer;
 
 
     public UpdateIdCommand(Gson gson, Consumer<String> sendMessage, IdChecker checkIdOnServer) {
@@ -25,7 +21,7 @@ public class UpdateIdCommand implements ClientCommand {
     }
 
     @Override
-    public void clientExecute(String[] args, String pars, InputProvider provider, Scanner scanner) throws IOException {
+    public void clientExecute(String[] args, String pars) throws IOException {
         int id = -1;
 
         // Если id передан в аргументах команды
@@ -40,7 +36,7 @@ public class UpdateIdCommand implements ClientCommand {
         // Если id не передан или некорректен - запрашиваем у пользователя
         while (id < 0) {
             System.out.print("Введите id > 0: ");
-            String line = scanner.nextLine().trim();
+            String line = "";
             if (line.isEmpty()) {
                 System.out.println("id не может быть пустым. Повторите ввод.");
                 continue;
@@ -56,7 +52,7 @@ public class UpdateIdCommand implements ClientCommand {
         boolean exists = checkIdOnServer.checkIdOnServer(id);
         if (exists) {
             // Теперь запрашиваем новые данные для объекта
-            Route updatedRoute = inputObject.inputObject(new Route(), provider);
+            Route updatedRoute = new Route();
             updatedRoute.setId(id);
 
             String updateJson = gson.toJson(updatedRoute);
@@ -64,8 +60,6 @@ public class UpdateIdCommand implements ClientCommand {
             CommandRequest updateRequest = new CommandRequest("update_id", updateJson, currentUsername);
             sendMessage.accept(gson.toJson(updateRequest));
         }
-
-
     }
 
     @Override

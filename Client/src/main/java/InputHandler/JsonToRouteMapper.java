@@ -12,8 +12,8 @@ import static ToStart.ClientNetworkManager.routeResponse;
 
 public class JsonToRouteMapper {
 
-    public static Map<String, RouteDTO> parseJsonToRouteMap(String jsonArgs) {
-        jsonArgs = waitForJsonResponse();
+    public static Map<String, RouteDTO> parseJsonToRouteMap() {
+        String jsonArgs = waitForJsonResponse();
         if (jsonArgs == null || jsonArgs.trim().isEmpty()) {
             throw new IllegalArgumentException("JSON строка пустая");
         }
@@ -48,7 +48,6 @@ public class JsonToRouteMapper {
         // Ждём, пока jsonArgs не станет непустым
         while (jsonArgs == null || jsonArgs.trim().isEmpty()) {
             jsonArgs = routeResponse.getMessage();
-
             if (jsonArgs == null || jsonArgs.trim().isEmpty()) {
                 try {
                     Thread.sleep(100); // подождать 100 мс перед следующей попыткой
@@ -59,7 +58,6 @@ public class JsonToRouteMapper {
                 }
             }
         }
-
         return jsonArgs;
     }
 }

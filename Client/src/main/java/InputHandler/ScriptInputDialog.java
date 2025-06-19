@@ -6,7 +6,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.geometry.Insets;
 import com.google.gson.Gson;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -41,7 +40,7 @@ public class ScriptInputDialog {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == scriptButtonType) {
                 sendScriptFromFilePath();
-                return null; // Закрываем диалог без результата — отправка уже выполнена
+                return null; // Закрываем диалог без результата , тк отправка уже выполнена
             }
             return null;
         });

@@ -1,8 +1,8 @@
 package Commands;
+
 import com.google.gson.Gson;
 import java.nio.channels.SocketChannel;
 import java.util.*;
-
 import java.util.function.Consumer;
 
 public class ClientCommandList implements Iterable<ClientCommand> {
@@ -17,9 +17,7 @@ public class ClientCommandList implements Iterable<ClientCommand> {
                                            ) {
 
         List<ClientCommand> commands = List.of(
-                new ExitCommand(socketChannel),
                 new Register(gson, sendMessage),
-                new AddCommand(gson, sendMessage),
                 new RemoveByKeyCommand(gson, sendMessage),
                 new RemoveGreaterCommand(gson, sendMessage),
                 new RemoveLowerCommand(gson, sendMessage),

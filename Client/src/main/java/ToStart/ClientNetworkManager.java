@@ -1,14 +1,10 @@
 package ToStart;
 
-import Classes.Route;
 import Classes.RouteDTO;
 import Commands.ClientCommand;
 import Commands.ClientCommandList;
-import InputHandler.InputProvider;
-import InputHandler.JsonToRouteMapper;
 import InputHandler.KeyboardInputProvider;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -16,9 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.util.Pair;
-
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -30,8 +24,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-
 import static ToStart.PasswordUtil.hashPassword;
 import static ToStart.UserSession.currentUsername;
 
@@ -144,12 +136,12 @@ public class ClientNetworkManager {
             return false;
         }
     }
-    public void processCommand(String[] inp, InputProvider provider, Scanner scanner, ClientCommandList clientCommandList, Consumer<String> sendMessage) throws IOException  {
+    public void processCommand(String[] inp,  ClientCommandList clientCommandList, Consumer<String> sendMessage) throws IOException  {
         String args = String.join(" ", Arrays.asList(inp).subList(1, inp.length));
         for (ClientCommand command : clientCommandList) {
             if (command.getName().equals(inp[0])) {
                 try {
-                    command.clientExecute(inp, args, provider, scanner);
+                    command.clientExecute(inp, args);
                     return;
                 } catch (IOException | NoSuchAlgorithmException e) {
                     System.err.println("Ошибка при выполнении команды " + inp[0]);
@@ -173,8 +165,6 @@ public class ClientNetworkManager {
     // Старая версия ок
     private void readFromServer(SelectionKey key) throws IOException {
         SocketChannel sc = (SocketChannel) key.channel();
-
-
         // Сначала читаем длину сообщения (4 байта)
         if (readDataBuffer == null) {
             int read = sc.read(readLengthBuffer);
@@ -212,9 +202,6 @@ public class ClientNetworkManager {
                 this.commandResponse.set(response);
             }
 
-            if (isAuthorized && (!response.getMessage().equals("Id найден"))) {
-                System.out.print("Введите команду: ");
-            }
             readDataBuffer = null; // готовимся к следующему сообщению
 
             this.lastResponse = response;
@@ -253,16 +240,15 @@ public class ClientNetworkManager {
     }
 
     public void loadRoutesFromMapAsync() {
-
-            KeyboardInputProvider provider = new KeyboardInputProvider(scanner);
-            String[] parts = "get_routes".split(" ");
-            try {
-                ClientCommandList commandList = ClientCommandList.create(socketChannel, gson, sendMessage, this::checkIdOnServer);
-                processCommand(parts, provider, scanner, commandList, sendMessage);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        KeyboardInputProvider provider = new KeyboardInputProvider(scanner);
+        String[] parts = "get_routes".split(" ");
+        try {
+            ClientCommandList commandList = ClientCommandList.create(socketChannel, gson, sendMessage, this::checkIdOnServer);
+            processCommand(parts, commandList, sendMessage);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
 
     public void sendCommand(String commandName, String key, String username) {
         CommandRequest request = new CommandRequest(commandName, key, username);
@@ -325,14 +311,6 @@ public class ClientNetworkManager {
              */
             socketChannel.register(selector, SelectionKey.OP_CONNECT);
             // Создаем и запускаем поток для пользовательского ввода
-            Thread inputThread = new Thread(() -> {
-                try {
-                    authorize(scanner);
-                } catch (Exception e) {
-                    System.err.println("Ошибка в цикле ввода");
-                }
-            });
-            inputThread.start();
 
             while (true) {
                 selector.select();
@@ -364,51 +342,6 @@ public class ClientNetworkManager {
 
     }
 
-    public boolean authorize(Scanner scanner) {
-        KeyboardInputProvider provider = new KeyboardInputProvider(scanner);
-        isAuthorized = false;
-        try {
-            System.out.println("Добрый вечер!");
-            System.out.println("Давайте же начнем это увлекательное и, надеюсь, успешное путешествие в мир моей 7й лабораторной");
-            System.out.println("Для начала работы необходимо войти (login) или зарегистрироваться (register)");
-
-            while (!isAuthorized) {
-                System.out.println(" Введите login/register: ");
-                String inputData = scanner.nextLine().trim();
-                if (inputData.isEmpty()) continue;
-
-                String[] parts = inputData.split(" ");
-                String command = parts[0].toLowerCase();
-
-                if (!command.equals("login") && !command.equals("register")) {
-                    System.out.println("Ошибка: сначала необходимо выполнить вход (login) или регистрацию (register).");
-                    continue;
-                }
-
-                ClientCommandList commandList = ClientCommandList.create(socketChannel, gson, sendMessage, this::checkIdOnServer);
-
-                try {
-                    responseLatch = new CountDownLatch(1);  //пытаюсь засинхронить ответ
-                    processCommand(parts, provider, scanner, commandList, sendMessage);
-                    if (!responseLatch.await(10, TimeUnit.SECONDS)){
-                        System.out.println("Сервер долго молчит нынче...");
-                        return false;
-                    }
-                    if (lastResponse != null && lastResponse.isSuccess()) {
-                        isAuthorized = true;
-                        break;
-                    }
-                } catch (IOException | InterruptedException e) {
-                    System.err.println("Ошибка при выполнении команды авторизации");
-                }
-            }
-            return isAuthorized;
-        } catch (Exception e) {
-            System.err.println("Ошибка при работе программы");
-            return false;
-        }
-    }
-
     public Consumer<String> getSendMessage() {
         return sendMessage;
     }
@@ -416,66 +349,5 @@ public class ClientNetworkManager {
     public boolean isAuthorized() {
         return isAuthorized;
     }
-
-
-    private ObservableList<RouteDTO> run() {
-        int attempts = 0;
-        final int maxAttempts = 30; // максимум 30 попыток
-        final long delayMillis = 500; // задержка между попытками
-
-        while (attempts < maxAttempts) {
-            try {
-                Thread.sleep(delayMillis);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-
-            if (lastResponse != null) {
-                Map<String, RouteDTO> routeList = lastResponse.getRouteList();
-
-                if (routeList != null && !routeList.isEmpty()) {
-                    ObservableList<RouteDTO> routes = FXCollections.observableArrayList(routeList.values());
-                    return routes;
-                }
-            }
-
-            attempts++;
-        }
-        // После всех попыток, если данные так и не появились
-        Platform.runLater(() -> System.out.println("Данные не загружены: lastResponse или routeList остались null"));
-        return null;
-    }
-
-
-        public ObservableList<RouteDTO> loadRoutesWithRetry(int maxAttempts, long delayMillis) {
-            int attempt = 0;
-
-            while (attempt++ < maxAttempts) {
-                try {
-                    Thread.sleep(delayMillis);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    System.err.println("Загрузка прервана");
-                    return FXCollections.emptyObservableList();
-                }
-
-                if (lastResponse != null) {
-                    Map<String, RouteDTO> routeList = lastResponse.getRouteList();
-
-                    if (routeList != null && !routeList.isEmpty()) {
-                        ObservableList<RouteDTO> routes = FXCollections.observableArrayList(routeList.values());
-                        return routes; // Данные загружены
-                    }
-                }
-            }
-
-
-            System.out.println("Данные не загружены: lastResponse или routeList остались null");
-            return FXCollections.emptyObservableList();
-        }
-
-
-
 
 }

@@ -25,20 +25,15 @@ public class Login implements ClientCommand{
     }
 
     @Override
-    public void clientExecute(String[] args, String pars, InputProvider provider, Scanner scanner) throws IOException {
-        System.out.print("Введите логин: ");
-        String username = scanner.nextLine().trim();
-        currentUsername = username;
-        // Считываем пароль скрытым вводом
+    public void clientExecute(String[] args, String pars) throws IOException {
         String password;
-
         Console console = System.console();
         if (console != null) {
             char[] passwordChars = console.readPassword("Введите пароль: ");
             password = new String(passwordChars);
         } else {
             System.out.print("Введите пароль: ");
-            password = scanner.nextLine();
+            password = "";
         }
         try {
             password = PasswordUtil.hashPassword(password);

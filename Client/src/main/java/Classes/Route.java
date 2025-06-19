@@ -27,42 +27,6 @@ public class Route {
         this.to.set(to);
     }
 
-    // Свойства для TableView
-
-    public IntegerProperty idProperty() {
-        return id;
-    }
-
-    public StringProperty nameProperty() {
-        return name;
-    }
-
-    public ObjectProperty<Coordinates> coordinatesProperty() {
-        return coordinates;
-    }
-
-    public StringProperty ownerProperty() {
-        return owner;
-    }
-
-    public ObjectProperty<Date> creationDateProperty() {
-        return creationDate;
-    }
-
-    public ObjectProperty<Location> fromProperty() {
-        return from;
-    }
-
-    public ObjectProperty<Location> toProperty() {
-        return to;
-    }
-
-    public StringProperty keyProperty() {
-        return key;
-    }
-
-    // Геттеры и сеттеры для значений
-
     public int getId() {
         return id.get();
     }
@@ -129,7 +93,6 @@ public class Route {
 
     @Override
     public String toString() {
-        // Можно оставить ваш текущий toString или адаптировать под свойства
         return "Route{" +
                 "id=" + getId() +
                 ", name=" + getName() +

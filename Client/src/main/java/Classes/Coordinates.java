@@ -1,6 +1,5 @@
 package Classes;
 
-
 import javafx.beans.property.*;
 
 public class Coordinates {
@@ -15,12 +14,9 @@ public class Coordinates {
 
     public long getX() { return x.get(); }
     public void setX(long value) { x.set(value); }
-    public LongProperty xProperty() { return x; }
 
-    // --- Y ---
     public int getY() { return y.get(); }
     public void setY(int value) { y.set(value); }
-    public IntegerProperty yProperty() { return y; }
 
 
 

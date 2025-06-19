@@ -3,7 +3,6 @@ package Commands;
 import InputHandler.InputProvider;
 import ToStart.PasswordUtil;
 import com.google.gson.Gson;
-
 import java.io.Console;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -19,8 +18,8 @@ import static ToStart.UserSession.currentUsername;
 public class Register implements ClientCommand {
     private final Gson gson;
     private final Consumer<String> sendMessage;
-    private TextField loginField = new TextField();
-    private PasswordField passwordField = new PasswordField();
+    private final TextField loginField = new TextField();
+    private final PasswordField passwordField = new PasswordField();
     private Button loginButton = new Button("Зарегистрироваться");
 
     public Register(Gson gson, Consumer<String> sendMessage) {
@@ -34,27 +33,20 @@ public class Register implements ClientCommand {
     private void onRegister() {
         String username = loginField.getText();
         String password = passwordField.getText();
-        //  Здесь отправляем команду login через ClientNetworkManager
         CommandRequest request = new CommandRequest("login", username + " " + password, username);
         String json = new Gson().toJson(request);
-
         sendMessage.accept(json);
     }
 
 
     @Override
-    public void clientExecute(String[] args, String pars, InputProvider provider, Scanner scanner) throws IOException{
+    public void clientExecute(String[] args, String pars) throws IOException{
         String password;
         // Получаем консоль
         Console console = System.console();
-        if (console != null) {
-            // Скрытый ввод пароля
-            char[] passwordChars = console.readPassword("Введите пароль: ");
-            password = new String(passwordChars);
-        } else {
-            // Если консоль недоступна, вводим пароль обычным способом
-            password = scanner.nextLine();
-        }
+        char[] passwordChars = console.readPassword("Введите пароль: ");
+        password = new String(passwordChars);
+
         try {
             password = PasswordUtil.hashPassword(password);
             Map<String, String> params = new HashMap<>();
