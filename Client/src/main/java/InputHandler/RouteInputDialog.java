@@ -14,8 +14,6 @@ import com.google.gson.Gson;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static ToStart.UserSession.currentUsername;
-
 public class RouteInputDialog {
     private final Dialog<Route> dialog;
     private final String currentUsername;

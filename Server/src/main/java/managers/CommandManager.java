@@ -44,6 +44,7 @@ public class CommandManager {
         commandList.put("register", new RegisterCommand());
         commandList.put("login", new LoginCommand());
         commandList.put("get_routes", new GetRoutesCommand());
+        commandList.put("execute_script", new ExecuteScript(collectionManager));
     }
     public static CommandResponse checkComm(CommandRequest request) {
         String commandName = request.getCommandName().toLowerCase();

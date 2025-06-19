@@ -1,4 +1,4 @@
-package paint;
+package View;
 
 public class Draw {
 

@@ -1,4 +1,4 @@
-package paint;
+package View;
 
 import Classes.RouteDTO;
 

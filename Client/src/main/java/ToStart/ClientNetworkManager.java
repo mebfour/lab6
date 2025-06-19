@@ -206,7 +206,7 @@ public class ClientNetworkManager {
             String jsonResponse = new String(data);
 
             CommandResponse response = gson.fromJson(jsonResponse, CommandResponse.class);
-            System.out.println("ТЕКУЩИЙ ОТВЕТ СЕРВЕРА" + response.getMessage());
+            System.out.println("ТЕКУЩИЙ ОТВЕТ СЕРВЕРА: " + response.getMessage());
             if (response.getMessage().trim().startsWith("{")){
                 routeResponse = response;
                 this.routeResponseProperty.set(response);

@@ -27,7 +27,6 @@ public class GetRoutesCommand implements Command {
         if (!routeMap.isEmpty()) {
             String json = gson.toJson(convertToDTOs(routeMap));
             System.out.println("from BD: " + json);
-            System.out.println("local когда отправляем: " + routeList);
             return new CommandResponse(json, true);
         } else {
             return new CommandResponse("Коллекция пуста! Введите add для добавления нового элемента.", false);

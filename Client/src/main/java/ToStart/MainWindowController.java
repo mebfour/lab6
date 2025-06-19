@@ -3,10 +3,16 @@ package ToStart;
 import Classes.RouteDTO;
 import InputHandler.JsonToRouteMapper;
 import InputHandler.RouteInputDialog;
+
+import InputHandler.ScriptInputDialog;
+import View.InfoTabContent;
+import View.Localization;
 import com.google.gson.Gson;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -22,7 +28,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.util.Duration;
-import paint.MyBoundingBox;
+import View.MyBoundingBox;
+import javafx.scene.control.TabPane;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,8 +38,10 @@ import java.util.function.Consumer;
 
 
 public class MainWindowController {
-
     private final BorderPane root = new BorderPane();
+    private Tab mainTab;
+    private Tab infoTab;
+    private final TabPane tabPane = new TabPane();
 
     private final ObservableList<RouteDTO> data = FXCollections.observableArrayList();
     private final TableView<RouteDTO> tableView = new TableView<>(data);
@@ -48,6 +57,11 @@ public class MainWindowController {
     Consumer<String> sendMessage;
     private final AtomicBoolean mapIsLoad = new AtomicBoolean(false);
     private boolean initialLoadDone = false;
+    private final ObjectProperty<Map<String, RouteDTO>> routeMapProperty = new SimpleObjectProperty<>();
+
+    public ObjectProperty<Map<String, RouteDTO>> routeMapProperty() {
+        return routeMapProperty;
+    }
 
 
     public MainWindowController(ClientNetworkManager clientNetworkManager, String username) {
@@ -57,8 +71,33 @@ public class MainWindowController {
         this.currentUser = username;
         this.canvas  = new Canvas(800, 300);
         this.canvas.setWidth(600);
+        Localization.setLocale(new Locale("ru"));
         setupTable();
         Label userLabel = new Label("Пользователь: " + username);
+        Button scriptButton = new Button(Localization.getString("script"));
+        scriptButton.setOnAction(event -> {
+            ScriptInputDialog dialog = new ScriptInputDialog(username, gson, sendMessage);
+            dialog.showAndSend();
+
+            // Подписываемся на ответ от сервера
+            ChangeListener<CommandResponse> listener = new ChangeListener<>() {
+                @Override
+                public void changed(ObservableValue<? extends CommandResponse> obs, CommandResponse oldVal, CommandResponse newVal) {
+                    if (newVal != null && newVal.isSuccess()) {
+                        // Только после успешного выполнения add — запрашиваем обновление данных
+                        clientNetworkManager.sendGetRoutesCommand();
+
+                    }
+                    // Отписываемся после первого срабатывания
+                    clientNetworkManager.commandResponseProperty().removeListener(this);
+                }
+            };
+
+            // Подписываем слушатель
+            clientNetworkManager.commandResponseProperty().addListener(listener);
+            clientNetworkManager.loadRoutesFromMapAsync();
+        });
+
         Button addButton = new Button("Добавить");
         addButton.setOnAction(event -> {
             RouteInputDialog dialog = new RouteInputDialog(username, gson, sendMessage);
@@ -154,7 +193,7 @@ public class MainWindowController {
             clientNetworkManager.loadRoutesFromMapAsync();
         });
 
-        HBox buttonBox = new HBox(10, addButton, removeButton, editButton);
+        HBox buttonBox = new HBox(10, addButton, removeButton, editButton, scriptButton);
 
         // Устанавливаем минимальную ширину таблицы и максимальную для растяжения
         tableView.setMinWidth(400);
@@ -177,14 +216,43 @@ public class MainWindowController {
         });
 
 
-        //  HBox для горизонтального размещения ---
+        // Создаем первую вкладку с таблицей и картой
+        this.mainTab = new Tab(Localization.getString("routes"));
+        mainTab.setClosable(false); // Запрещаем закрывать вкладку
+
         HBox hBox = new HBox(10); // 10 — отступ между элементами
         hBox.getChildren().addAll(tableView, canvas);
 
-// Размещаем элементы в BorderPane
-        root.setTop(userLabel);
-        root.setCenter(hBox);
-        root.setBottom(buttonBox);
+        BorderPane mainContent = new BorderPane();
+        mainContent.setCenter(hBox);
+        mainContent.setBottom(buttonBox);
+        mainTab.setContent(mainContent);
+
+// Создаем вторую вкладку
+
+
+        InfoTabContent infoTabContent = new InfoTabContent(routeMapProperty());
+        this.infoTab = infoTabContent.getTab(this.infoTab);
+
+// Добавляем обе вкладки в TabPane
+        tabPane.getTabs().addAll(mainTab, infoTab);
+        ChoiceBox<Locale> languageSelector = new ChoiceBox<>();
+        languageSelector.getItems().addAll(Localization.getSupportedLocales());
+
+// Устанавливаем текущую локаль
+        languageSelector.setValue(Locale.getDefault());
+
+        languageSelector.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                Localization.setLocale(newVal);
+                updateUILanguage(userLabel, addButton, editButton,removeButton, scriptButton); // Обновляем элементы интерфейса
+            }
+        });
+// Устанавливаем TabPane как основное содержимое root
+        HBox topPanel = new HBox(10, userLabel, languageSelector);
+        topPanel.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        root.setTop(topPanel);
+        root.setCenter(tabPane);
 
         clientNetworkManager.routeResponseProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
@@ -208,6 +276,21 @@ public class MainWindowController {
                 clientNetworkManager.sendGetRoutesCommand();
             }
         });
+        clientNetworkManager.routeResponseProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                String jsonArgs = newVal.getMessage();
+                if (jsonArgs != null && jsonArgs.trim().startsWith("{")) {
+                    try {
+                        routeMap = JsonToRouteMapper.parseJsonToRouteMap(jsonArgs);
+                        Platform.runLater(() -> {
+                            updateTableAndCanvas();
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
         if (!initialLoadDone) {
             initialLoadDone = true;
             System.out.println("Первоначальная загрузка маршрутов...");
@@ -220,10 +303,52 @@ public class MainWindowController {
         gc.setFill(Color.LIGHTGRAY);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-
-
     }
+    private void updateUILanguage(Label userLabel, Button addButton, Button editButton, Button removeButton, Button scriptButton) {
+        // Обновление текстовых меток
+        userLabel.setText(Localization.getString("user_label") + currentUser);
+        addButton.setText(Localization.getString("add"));
+        removeButton.setText(Localization.getString("remove"));
+        editButton.setText(Localization.getString("edit"));
 
+        // Обновляем заголовки вкладок
+        mainTab.setText(Localization.getString("routes"));
+        infoTab.setText(Localization.getString("information"));
+
+        // Обновление заголовков таблицы
+        List<TableColumn<RouteDTO, ?>> columns = tableView.getColumns();
+        for (TableColumn<RouteDTO, ?> col : columns) {
+            String originalText = col.getText();
+            switch (originalText) {
+                case "ID": col.setText(Localization.getString("id")); break;
+                case "Название": col.setText(Localization.getString("name")); break;
+                case "X": col.setText(Localization.getString("x")); break;
+                case "Y": col.setText(Localization.getString("y")); break;
+                case "Владелец": col.setText(Localization.getString("owner")); break;
+                case "Дата создания": col.setText(Localization.getString("creation_date")); break;
+                case "From": col.setText(Localization.getString("from")); break;
+                case "To": col.setText(Localization.getString("to")); break;
+                case "Ключ": col.setText(Localization.getString("key")); break;
+            }
+        }
+
+        // Обновление заголовков вложенных колонок
+        for (TableColumn<RouteDTO, ?> parentCol : tableView.getColumns()) {
+            if (parentCol instanceof TableColumn<?, ?>) {
+                for (Object subColObj : parentCol.getColumns()) {
+                    if (subColObj instanceof TableColumn<?, ?> subCol) {
+                        String text = subCol.getText();
+                        switch (text) {
+                            case "From Name": subCol.setText(Localization.getString("from_name")); break;
+                            case "To Name": subCol.setText(Localization.getString("to_name")); break;
+                        }
+                    }
+                }
+            }
+        }
+
+        drawRoutes(); // Перерисовываем легенду
+    }
     public BorderPane getView() {
         return root;
     }
@@ -231,52 +356,61 @@ public class MainWindowController {
         ObservableList<RouteDTO> routeList = FXCollections.observableArrayList(routeMap.values());
         tableView.setItems(routeList);
         drawRoutes();
+        this.routeMapProperty.set(routeMap); // <-- Уведомляем слушателей
     }
     private void setupTable() {
-        // Настройка колонок происходит один раз
-        TableColumn<RouteDTO, Integer> idCol = new TableColumn<>("ID");
+        // Колонка ID
+        TableColumn<RouteDTO, Integer> idCol = new TableColumn<>(Localization.getString("id"));
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
 
-        TableColumn<RouteDTO, String> nameCol = new TableColumn<>("Название");
+        // Колонка Название
+        TableColumn<RouteDTO, String> nameCol = new TableColumn<>(Localization.getString("name"));
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<RouteDTO, Number> xCol = new TableColumn<>("X");
+        // Колонка X
+        TableColumn<RouteDTO, Number> xCol = new TableColumn<>(Localization.getString("x"));
         xCol.setCellValueFactory(new PropertyValueFactory<>("x"));
 
-        TableColumn<RouteDTO, Number> yCol = new TableColumn<>("Y");
+        // Колонка Y
+        TableColumn<RouteDTO, Number> yCol = new TableColumn<>(Localization.getString("y"));
         yCol.setCellValueFactory(new PropertyValueFactory<>("y"));
 
-        TableColumn<RouteDTO, String> ownerCol = new TableColumn<>("Владелец");
+        // Колонка Владелец
+        TableColumn<RouteDTO, String> ownerCol = new TableColumn<>(Localization.getString("owner"));
         ownerCol.setCellValueFactory(new PropertyValueFactory<>("owner"));
 
-        TableColumn<RouteDTO, String> dateCol = new TableColumn<>("Дата создания");
+        // Колонка Дата создания
+        TableColumn<RouteDTO, String> dateCol = new TableColumn<>(Localization.getString("creation_date"));
         dateCol.setCellValueFactory(data -> {
             RouteDTO route = data.getValue();
             return new SimpleStringProperty(
-                    new Date(route.getCreationDate()).toString()
+                    Localization.getDateFormat().format(new Date(route.getCreationDate()))
             );
         });
 
-// Колонка "From" — объединяем fromX, fromY, fromZ, fromName
-        TableColumn<RouteDTO, String> fromCol = new TableColumn<>("From");
+        // Колонка From
+        TableColumn<RouteDTO, String> fromCol = new TableColumn<>(Localization.getString("from"));
         fromCol.getColumns().addAll(
-                createSubColumn("From X", "fromX"),
-                createSubColumn("From Y", "fromY"),
-                createSubColumn("From Z", "fromZ"),
-                createSubColumn("From Name", "fromName")
+                createSubColumn(Localization.getString("from_name"), "fromName"),
+                createSubColumn("X", "fromX"),
+                createSubColumn("Y", "fromY"),
+                createSubColumn("Z", "fromZ")
         );
 
-// Колонка "To" — объединяем toX, toY, toZ, toName
-        TableColumn<RouteDTO, String> toCol = new TableColumn<>("To");
+        // Колонка To
+        TableColumn<RouteDTO, String> toCol = new TableColumn<>(Localization.getString("to"));
         toCol.getColumns().addAll(
-                createSubColumn("To X", "toX"),
-                createSubColumn("To Y", "toY"),
-                createSubColumn("To Z", "toZ"),
-                createSubColumn("To Name", "toName")
+                createSubColumn(Localization.getString("to_name"), "toName"),
+                createSubColumn("X", "toX"),
+                createSubColumn("Y", "toY"),
+                createSubColumn("Z", "toZ")
         );
 
-        TableColumn<RouteDTO, String> keyCol = new TableColumn<>("Ключ");
+        // Колонка Ключ
+        TableColumn<RouteDTO, String> keyCol = new TableColumn<>(Localization.getString("key"));
         keyCol.setCellValueFactory(new PropertyValueFactory<>("key"));
+
+        // Добавляем все колонки
         tableView.getColumns().addAll(idCol, nameCol, xCol, yCol, ownerCol, dateCol, fromCol, toCol, keyCol);
 
         // Устанавливаем пустой список на старте

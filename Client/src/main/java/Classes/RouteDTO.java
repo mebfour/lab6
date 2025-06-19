@@ -1,6 +1,6 @@
 package Classes;
 
-import paint.MyBoundingBox;
+import View.MyBoundingBox;
 
 public class RouteDTO {
 
