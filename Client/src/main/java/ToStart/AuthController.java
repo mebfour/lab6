@@ -43,15 +43,11 @@ public class AuthController {
     private void onLogin() {
         String username = loginField.getText();
         String password = passwordField.getText();
-
         if (clientNetworkManager.authorize(new Scanner(System.in))){
             openMainWindow(username);
         }   else {
             showAlert("Ошибка", "Не удалось войти");
         }
-
-
-
         //  Здесь отправляем команду login через ClientNetworkManager
         CommandRequest request = new CommandRequest("login", username + " " + password, username);
         String json = new Gson().toJson(request);

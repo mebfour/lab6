@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
 import sql.DataSourceProvider;
 
 import javax.sql.DataSource;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.Map;
 
@@ -37,6 +36,11 @@ public class LoginCommand implements Command {
                     if (!rs.next()) {
                         RegisterCommand registerCommand = new RegisterCommand();
                         registerCommand.execute(jsonArgs);
+
+                        // После успешной регистрации выполняем вход
+                        LoginCommand loginCommand = new LoginCommand();
+                        return loginCommand.execute(jsonArgs); // Автоматический вход
+
                     }
                     String storedHash = rs.getString("password_hash");
                     String providedHash = password;

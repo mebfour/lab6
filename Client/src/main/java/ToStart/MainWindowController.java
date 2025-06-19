@@ -124,31 +124,40 @@ public class MainWindowController {
         Button removeButton = new Button("Удалить");
         removeButton.setOnAction(event -> {
             RouteDTO selectedRoute = tableView.getSelectionModel().getSelectedItem();
-            if (selectedRoute != null) {
-                String key = selectedRoute.getKey();
-
-                ChangeListener<CommandResponse> listener = new ChangeListener<>() {
-                    @Override
-                    public void changed(ObservableValue<? extends CommandResponse> obs, CommandResponse oldVal, CommandResponse newVal) {
-                        if (newVal != null && newVal.isSuccess()) {
-                            clientNetworkManager.sendGetRoutesCommand(); // Запрашиваем новые данные
-                        }
-                        clientNetworkManager.commandResponseProperty().removeListener(this); // Теперь this — это слушатель
-                    }
-                };
-
-                clientNetworkManager.commandResponseProperty().addListener(listener);
-                clientNetworkManager.sendCommand("remove_by_key", key, username);
-
-
-            } else {
+            if (selectedRoute == null) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Ничего не выбрано");
                 alert.setHeaderText(null);
                 alert.setContentText("Выберите маршрут для удаления.");
                 alert.showAndWait();
+                return;
             }
-            clientNetworkManager.loadRoutesFromMapAsync();
+
+            if (!selectedRoute.getOwner().equals(username)) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Ошибка доступа");
+                alert.setHeaderText(null);
+                alert.setContentText("Вы не можете удалить маршрут, который вам не принадлежит.");
+                alert.showAndWait();
+                return;
+            }
+
+            if (selectedRoute != null) {
+                // Удаляем локально
+                tableView.getItems().remove(selectedRoute);
+                // Отправляем команду на сервер
+                clientNetworkManager.sendCommand("remove_by_key", selectedRoute.getKey(), username);
+                // Через некоторое время обновляем данные (не идеально, но работает)
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(1000); // Даем серверу время обработать
+                        Platform.runLater(() -> clientNetworkManager.sendGetRoutesCommand());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            }
+
         });
         Button editButton = new Button("Редактировать");
         editButton.setOnAction(event -> {

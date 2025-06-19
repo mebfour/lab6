@@ -7,11 +7,9 @@ import java.util.function.Consumer;
 
 public class ClientCommandList implements Iterable<ClientCommand> {
     private final List<ClientCommand> commands;
-
     private ClientCommandList(List<ClientCommand> commands) {
         this.commands = commands;
     }
-
     public static ClientCommandList create(SocketChannel socketChannel,
                                            Gson gson,
                                            Consumer<String> sendMessage,
@@ -33,8 +31,6 @@ public class ClientCommandList implements Iterable<ClientCommand> {
 
         return new ClientCommandList(commands);
     }
-
-
     @Override
     public Iterator<ClientCommand> iterator() {
         return commands.iterator();

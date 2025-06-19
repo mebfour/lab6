@@ -11,6 +11,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import java.io.IOException;
 
@@ -48,20 +49,17 @@ public class Start extends Application {
             }
 
             // Асинхронно проверяем пользователя и выполняем login/register
-            Task<Boolean> authTask = new Task<>() {
+            Task<Pair<Boolean, String>> authTask = new Task<>() {
                 @Override
-                protected Boolean call() throws Exception {
-                    Boolean ans = clientNetworkManager.authenticate(username, password);
-                    System.out.println("Ответ для входа: "+ans);
-                    return ans;
+                protected Pair<Boolean, String> call() throws Exception {
+                    return clientNetworkManager.authenticate(username, password);
                 }
             };
 
             authTask.setOnSucceeded(e -> {
-                Boolean authorized = authTask.getValue();
+                Boolean authorized = authTask.getValue().getKey();
                 if (authorized != null && authorized) {
                     messageLabel.setText("Успешный вход");
-
                     MainWindowController controller = new MainWindowController(clientNetworkManager, username);
                     Scene scene = new Scene(controller.getView(), 800, 600);
                     primaryStage.setTitle("Route Table Viewer");
@@ -69,7 +67,7 @@ public class Start extends Application {
                     primaryStage.show();
                     // Открыть главное окно
                 } else {
-                    messageLabel.setText("Ошибка авторизации/регистрации");
+                    messageLabel.setText(authTask.getValue().getValue());
                 }
             });
 

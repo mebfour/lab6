@@ -15,6 +15,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
+import javafx.util.Pair;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -68,8 +69,7 @@ public class ClientNetworkManager {
 
 
 
-    public boolean authenticate(String username, String password) {
-
+    public Pair<Boolean, String> authenticate(String username, String password)  {
         Map<String, String> params = new HashMap<>();
         try {
             password = hashPassword(password);
@@ -85,8 +85,6 @@ public class ClientNetworkManager {
 
         responseLatch = new CountDownLatch(1);
         sendMessage.accept(jsonRequest);
-        responseLatch = new CountDownLatch(1);
-        sendMessage.accept(jsonRequest);
         boolean awaited = false;
         try {
             awaited = responseLatch.await(10, TimeUnit.SECONDS);
@@ -95,15 +93,16 @@ public class ClientNetworkManager {
         }
         if (!awaited) {
             System.out.println("Сервер долго молчит...");
-            return false;
+            return new Pair<>(false, "Ошибка входа");
         }
 
         if (responseLatch != null) {
             responseLatch.countDown();
         }
-        System.out.println(lastResponse.isSuccess());
-
-        return  lastResponse.isSuccess();
+        System.out.println("После первого запроса на регистрацию");
+        System.out.println("Успех - " + lastResponse.isSuccess());
+        System.out.println("Сообщение - " + lastResponse.getMessage());
+        return new Pair<>(lastResponse.isSuccess(), lastResponse.getMessage());
     }
     public ClientNetworkManager() {
         this.sendMessage = json -> {
@@ -291,44 +290,6 @@ public class ClientNetworkManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    public ObservableList<RouteDTO> loadRoutesFromMap() {
-        // Преобразуем Map в ObservableList
-        if (lastResponse != null) {
-            String json = lastResponse.getMessage();
-
-            if (!lastResponse.isSuccess()) {
-                System.out.println("Ошибка от сервера: " + lastResponse.getMessage());
-                return FXCollections.emptyObservableList();
-            }
-            if (json == null || json.trim().isEmpty()) {
-                System.out.println("Получена пустая коллекция");
-                return FXCollections.emptyObservableList();
-            }
-
-            Map<String, RouteDTO> routeMap = JsonToRouteMapper.parseJsonToRouteMap(json);
-            ObservableList<RouteDTO> list = FXCollections.observableArrayList(routeMap.values());
-            return list;
-//            try {
-//                Type mapType = new TypeToken<Map<String, RouteDTO>>() {
-//                }.getType();
-//                Map<String, RouteDTO> routeMap = new Gson().fromJson(json, mapType);
-//
-//                ObservableList<RouteDTO> routes = FXCollections.observableArrayList();
-//                if (routeMap != null) {
-//                    routes.addAll(routeMap.values());
-//                }
-//                return routes;
-//            } catch (Exception e) {
-//                System.err.println("Ошибка десериализации JSON: " + e.getMessage());
-//                return FXCollections.emptyObservableList();
-//            }
-//        }
-//        return FXCollections.emptyObservableList();
-
-        }
-        System.out.println("Возвращаем пустую мапу");
-        return FXCollections.emptyObservableList();
     }
 
     public void start(String host, int port) throws IOException {

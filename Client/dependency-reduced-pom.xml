@@ -23,7 +23,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>Client</mainClass>
+                  <mainClass>Start</mainClass>
                 </transformer>
               </transformers>
             </configuration>
