@@ -1,7 +1,6 @@
 package Commands;
 
 import InputHandler.InputProvider;
-import ToStart.MainWindowController;
 import ToStart.PasswordUtil;
 import com.google.gson.Gson;
 
@@ -13,8 +12,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Consumer;
 import ToStart.CommandRequest;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 

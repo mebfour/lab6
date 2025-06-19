@@ -52,7 +52,7 @@ public class Start extends Application {
                 @Override
                 protected Boolean call() throws Exception {
                     Boolean ans = clientNetworkManager.authenticate(username, password);
-                    System.out.println(ans);
+                    System.out.println("Ответ для входа: "+ans);
                     return ans;
                 }
             };
