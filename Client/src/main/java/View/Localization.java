@@ -20,7 +20,12 @@ public class Localization {
     static {
         // Русский
         Map<String, String> ru = new HashMap<>();
+        ru.put("able_comms", "Доступные команды:");
+        ru.put("add_route", "Добавить маршрут");
+        ru.put("remove_route_by_key", "Удалить маршрут по ключу");
+        ru.put("edit_route", "Редактировать маршрут");
         ru.put("add", "Добавить");
+        ru.put("user", "Пользователь: ");
         ru.put("remove", "Удалить");
         ru.put("edit", "Редактировать");
         ru.put("user_label", "Пользователь: ");
@@ -31,14 +36,17 @@ public class Localization {
         ru.put("y", "Y");
         ru.put("owner", "Владелец");
         ru.put("creation_date", "Дата создания");
-        ru.put("from", "From");
+        ru.put("from", "Откуда");
         ru.put("to", "To");
         ru.put("key", "Ключ");
-        ru.put("from_name", "From Name");
-        ru.put("to_name", "To Name");
+        ru.put("from_name", "Откуда");
+        ru.put("to_name", "Куда");
         ru.put("routes", "Маршруты");
         ru.put("information", "Информация");
         ru.put("script", "Скрипт");
+        ru.put("type", "Тип");
+        ru.put("num_elts", "Количество элементов");
+        ru.put("date_of_firts_route", "Дата первой записи");
         ru.put("execute_script", "Выполнить скрипт");
         ru.put("fill in all fields", "Заполните все поля");
         ru.put("tip_path", "Путь к файлу");
@@ -56,7 +64,6 @@ public class Localization {
         ru.put("from_place: ","Пункт отправления:" );
         ru.put("inp_err", "Ошибка ввода");
         ru.put("check_correct", "Проверьте правильность введенных числовых значений");
-
 
         localizedStrings.put(new Locale("ru"), ru);
 
@@ -84,6 +91,28 @@ public class Localization {
         nl.put("execute_script", "Script uitvoeren");
         nl.put("fill in all fields", "Vul alle velden in");
         nl.put("tip_path", "Vul alle velden in");
+        nl.put("able_comms", "Beschikbare commando's:");
+        nl.put("add_route", "Route toevoegen");
+        nl.put("remove_route_by_key", "Route verwijderen op sleutel");
+        nl.put("edit_route", "Route bewerken");
+        nl.put("user", "Gebruiker: ");
+        nl.put("type", "Type");
+        nl.put("num_elts", "Aantal elementen");
+        nl.put("date_of_firts_route", "Datum van eerste route");
+        nl.put("add_new_route", "Nieuwe route toevoegen");
+        nl.put("x_coord_l", "X-coördinaat (long)");
+        nl.put("y_coord_i", "Y-coördinaat (int)");
+        nl.put("name_to", "Naam van bestemming");
+        nl.put("x_coord_f", "X-coördinaat (float)");
+        nl.put("z_coord_i", "Z-coördinaat (int)");
+        nl.put("name_from", "Naam van vertrekpunt");
+        nl.put("main_info:", "Hoofdinformatie:");
+        nl.put("route_name:", "Routenaam:");
+        nl.put("coords:", "Coördinaten:");
+        nl.put("to_place:", "Bestemming:");
+        nl.put("from_place:", "Vertrekpunt:");
+        nl.put("inp_err", "Invoerfout");
+        nl.put("check_correct", "Controleer de juistheid van de ingevoerde numerieke waarden");
 
         localizedStrings.put(new Locale("nl"), nl);
 
@@ -111,6 +140,28 @@ public class Localization {
         da.put("execute_script", "Kør script");
         da.put("fill in all fields", "Udfyld alle felter");
         da.put("tip_path", "Udfyld alle felter");
+        da.put("able_comms", "Tilgængelige kommandoer:");
+        da.put("add_route", "Tilføj rute");
+        da.put("remove_route_by_key", "Fjern rute efter nøgle");
+        da.put("edit_route", "Rediger rute");
+        da.put("user", "Bruger: ");
+        da.put("type", "Type");
+        da.put("num_elts", "Antal elementer");
+        da.put("date_of_firts_route", "Dato for første rute");
+        da.put("add_new_route", "Tilføj ny rute");
+        da.put("x_coord_l", "X-koordinat (long)");
+        da.put("y_coord_i", "Y-koordinat (int)");
+        da.put("name_to", "Navn på destinationssted");
+        da.put("x_coord_f", "X-koordinat (float)");
+        da.put("z_coord_i", "Z-koordinat (int)");
+        da.put("name_from", "Navn på afgangssted");
+        da.put("main_info:", "Hovedinformation:");
+        da.put("route_name:", "Rutenavn:");
+        da.put("coords:", "Koordinater:");
+        da.put("to_place:", "Destinationssted:");
+        da.put("from_place: ", "Afgangssted:");
+        da.put("inp_err", "Inputfejl");
+        da.put("check_correct", "Tjek korrektheden af de indtastede numeriske værdier");
 
         localizedStrings.put(new Locale("da"), da);
 
@@ -138,6 +189,28 @@ public class Localization {
         en_IN.put("execute_script", "Execute Script");
         en_IN.put("fill in all fields", "Fill in all fields");
         en_IN.put("tip_path", "The file path");
+        en_IN.put("able_comms", "Available commands:");
+        en_IN.put("add_route", "Add route");
+        en_IN.put("remove_route_by_key", "Remove route by key");
+        en_IN.put("edit_route", "Edit route");
+        en_IN.put("user", "User: ");
+        en_IN.put("type", "Type");
+        en_IN.put("num_elts", "Number of elements");
+        en_IN.put("date_of_firts_route", "Date of first route");
+        en_IN.put("add_new_route", "Add new route");
+        en_IN.put("x_coord_l", "X coordinate (long)");
+        en_IN.put("y_coord_i", "Y coordinate (int)");
+        en_IN.put("name_to", "Destination name");
+        en_IN.put("x_coord_f", "X coordinate (float)");
+        en_IN.put("z_coord_i", "Z coordinate (int)");
+        en_IN.put("name_from", "Departure point name");
+        en_IN.put("main_info:", "Main information:");
+        en_IN.put("route_name:", "Route name:");
+        en_IN.put("coords:", "Coordinates:");
+        en_IN.put("to_place:", "Destination:");
+        en_IN.put("from_place:", "Departure point:");
+        en_IN.put("inp_err", "Input error");
+        en_IN.put("check_correct", "Please check the correctness of entered numeric values");
 
         localizedStrings.put(new Locale("en", "IN"), en_IN);
     }

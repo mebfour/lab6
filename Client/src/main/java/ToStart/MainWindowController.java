@@ -47,7 +47,8 @@ public class MainWindowController {
     Consumer<String> sendMessage;
     private boolean initialLoadDone = false;
     private final ObjectProperty<Map<String, RouteDTO>> routeMapProperty = new SimpleObjectProperty<>();
-
+    private final Map<TableColumn<RouteDTO, ?>, String> originalColumnTitles = new HashMap<>();
+    private final Map<TableColumn<RouteDTO, ?>, String> originalSubColumnTitles = new HashMap<>();
     public ObjectProperty<Map<String, RouteDTO>> routeMapProperty() {
         return routeMapProperty;
     }
@@ -64,7 +65,7 @@ public class MainWindowController {
         canvasContainer.setMaxSize(300, 300);
         Localization.setLocale(new Locale("ru"));
         setupTable();
-        Label userLabel = new Label("Пользователь: " + username);
+        Label userLabel = new Label(Localization.getString("user") + username);
         Button scriptButton = new Button(Localization.getString("script"));
         scriptButton.setOnAction(event -> {
             ScriptInputDialog dialog = new ScriptInputDialog(username, gson, sendMessage);
@@ -77,6 +78,7 @@ public class MainWindowController {
                     if (newVal != null && newVal.isSuccess()) {
                         // Только после успешного выполнения add — запрашиваем обновление данных
                         clientNetworkManager.sendGetRoutesCommand();
+                        clientNetworkManager.loadRoutesFromMapAsync();
 
                     }
                     // Отписываемся после первого срабатывания
@@ -101,6 +103,7 @@ public class MainWindowController {
                     if (newVal != null && newVal.isSuccess()) {
                         // Только после успешного выполнения add — запрашиваем обновление данных
                         clientNetworkManager.sendGetRoutesCommand();
+                        clientNetworkManager.loadRoutesFromMapAsync();
 
                     }
                     // Отписываемся после первого срабатывания
@@ -134,11 +137,8 @@ public class MainWindowController {
             }
 
             if (selectedRoute != null) {
-                // Удаляем локально
                 tableView.getItems().remove(selectedRoute);
-                // Отправляем команду на сервер
                 clientNetworkManager.sendCommand("remove_by_key", selectedRoute.getKey(), username);
-                // Через некоторое время обновляем данные (не идеально, но работает)
                 new Thread(() -> {
                     try {
                         Thread.sleep(1000); // Даем серверу время обработать
@@ -270,6 +270,7 @@ public class MainWindowController {
             if (newVal != null && newVal.isSuccess() && (!initialLoadDone)) {
                 // ВСЕГДА запрашиваем актуальные данные после успешной команды
                 clientNetworkManager.sendGetRoutesCommand();
+                clientNetworkManager.loadRoutesFromMapAsync();
             }
         });
         clientNetworkManager.routeResponseProperty().addListener((obs, oldVal, newVal) -> {
@@ -308,37 +309,43 @@ public class MainWindowController {
         addButton.setText(Localization.getString("add"));
         removeButton.setText(Localization.getString("remove"));
         editButton.setText(Localization.getString("edit"));
+        scriptButton.setText(Localization.getString("execute_script"));
 
         // Обновляем заголовки вкладок
         mainTab.setText(Localization.getString("routes"));
         infoTab.setText(Localization.getString("information"));
 
         // Обновление заголовков таблицы
-        List<TableColumn<RouteDTO, ?>> columns = tableView.getColumns();
-        for (TableColumn<RouteDTO, ?> col : columns) {
-            String originalText = col.getText();
-            switch (originalText) {
-                case "ID": col.setText(Localization.getString("id")); break;
-                case "Название": col.setText(Localization.getString("name")); break;
-                case "X": col.setText(Localization.getString("x")); break;
-                case "Y": col.setText(Localization.getString("y")); break;
-                case "Владелец": col.setText(Localization.getString("owner")); break;
-                case "Дата создания": col.setText(Localization.getString("creation_date")); break;
-                case "From": col.setText(Localization.getString("from")); break;
-                case "To": col.setText(Localization.getString("to")); break;
-                case "Ключ": col.setText(Localization.getString("key")); break;
+        for (TableColumn<RouteDTO, ?> col : tableView.getColumns()) {
+            String originalTitle = originalColumnTitles.get(col);
+            if (originalTitle != null) {
+                switch (originalTitle) {
+                    case "ID": col.setText(Localization.getString("id")); break;
+                    case "Название": col.setText(Localization.getString("name")); break;
+                    case "X": col.setText(Localization.getString("x")); break;
+                    case "Y": col.setText(Localization.getString("y")); break;
+                    case "Владелец": col.setText(Localization.getString("owner")); break;
+                    case "Дата создания": col.setText(Localization.getString("creation_date")); break;
+                    case "Откуда": col.setText(Localization.getString("from")); break;
+                    case "Куда": col.setText(Localization.getString("to")); break;
+                    case "Ключ": col.setText(Localization.getString("key")); break;
+                }
             }
-        }
-        // Обновление заголовков вложенных колонок
-        for (TableColumn<RouteDTO, ?> parentCol : tableView.getColumns()) {
-            if (parentCol instanceof TableColumn<?, ?>) {
-                for (Object subColObj : parentCol.getColumns()) {
-                    if (subColObj instanceof TableColumn<?, ?> subCol) {
-                        String text = subCol.getText();
-                        switch (text) {
-                            case "From Name": subCol.setText(Localization.getString("from_name")); break;
-                            case "To Name": subCol.setText(Localization.getString("to_name")); break;
-                        }
+
+            // Обновляем подколонки
+            for (TableColumn<RouteDTO, ?> subCol : col.getColumns()) {
+                String originalSubTitle = originalSubColumnTitles.get(subCol);
+                if (originalSubTitle != null) {
+                    switch (originalSubTitle) {
+                        case "Откуда":
+                            subCol.setText(Localization.getString("from_name"));
+                            break;
+                        case "Куда":
+                            subCol.setText(Localization.getString("to_name"));
+                            break;
+                        case "X": subCol.setText("X"); break;
+                        case "Y": subCol.setText("Y"); break;
+                        case "Z": subCol.setText("Z"); break;
                     }
                 }
             }
@@ -347,7 +354,12 @@ public class MainWindowController {
         ObservableList<RouteDTO> items = tableView.getItems();
         tableView.setItems(FXCollections.observableArrayList());
         tableView.setItems(items);
+        updateTabTitles();
         drawRoutes(); // Перерисовываем легенду
+    }
+    private void updateTabTitles() {
+        mainTab.setText(Localization.getString("routes"));
+        infoTab.setText(Localization.getString("information"));
     }
     public BorderPane getView() {
         return root;
@@ -361,27 +373,32 @@ public class MainWindowController {
     private void setupTable() {
         // Колонка ID
         TableColumn<RouteDTO, Integer> idCol = new TableColumn<>(Localization.getString("id"));
+        originalColumnTitles.put(idCol, "ID");
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
 
         // Колонка Название
         TableColumn<RouteDTO, String> nameCol = new TableColumn<>(Localization.getString("name"));
+        originalColumnTitles.put(nameCol, "Название");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         // Колонка X
         TableColumn<RouteDTO, Number> xCol = new TableColumn<>(Localization.getString("x"));
+        originalColumnTitles.put(xCol, "X");
         xCol.setCellValueFactory(new PropertyValueFactory<>("x"));
 
         // Колонка Y
         TableColumn<RouteDTO, Number> yCol = new TableColumn<>(Localization.getString("y"));
+        originalColumnTitles.put(yCol, "Y");
         yCol.setCellValueFactory(new PropertyValueFactory<>("y"));
 
         // Колонка Владелец
         TableColumn<RouteDTO, String> ownerCol = new TableColumn<>(Localization.getString("owner"));
+        originalColumnTitles.put(ownerCol, "Владелец");
         ownerCol.setCellValueFactory(new PropertyValueFactory<>("owner"));
 
         // Колонка Дата создания
         TableColumn<RouteDTO, String> dateCol = new TableColumn<>(Localization.getString("creation_date"));
-
+        originalColumnTitles.put(dateCol, "Дата создания");
         // Создаем динамически обновляемый формат даты
         dateCol.setCellValueFactory(data -> {
             RouteDTO route = data.getValue();
@@ -404,6 +421,7 @@ public class MainWindowController {
 
         // Колонка From
         TableColumn<RouteDTO, String> fromCol = new TableColumn<>(Localization.getString("from"));
+        originalColumnTitles.put(fromCol, "Откуда");
         fromCol.getColumns().addAll(
                 createSubColumn(Localization.getString("from_name"), "fromName"),
                 createSubColumn("X", "fromX"),
@@ -413,6 +431,7 @@ public class MainWindowController {
 
         // Колонка To
         TableColumn<RouteDTO, String> toCol = new TableColumn<>(Localization.getString("to"));
+        originalColumnTitles.put(toCol, "Куда");
         toCol.getColumns().addAll(
                 createSubColumn(Localization.getString("to_name"), "toName"),
                 createSubColumn("X", "toX"),
@@ -422,6 +441,7 @@ public class MainWindowController {
 
         // Колонка Ключ
         TableColumn<RouteDTO, String> keyCol = new TableColumn<>(Localization.getString("key"));
+        originalColumnTitles.put(keyCol, "Ключ");
         keyCol.setCellValueFactory(new PropertyValueFactory<>("key"));
 
         // Добавляем все колонки
@@ -432,6 +452,7 @@ public class MainWindowController {
     }
     private TableColumn<RouteDTO, String> createSubColumn(String title, String field) {
         TableColumn<RouteDTO, String> col = new TableColumn<>(title);
+        originalSubColumnTitles.put(col, title);
         col.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getByKey(field)));
         return col;
     }

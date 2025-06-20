@@ -21,19 +21,19 @@ public class InfoTabContent {
         content.setStyle("-fx-padding: 10; -fx-font-size: 14px;");
 
         // список команд
-        Label commandsLabel = new Label("Доступные команды:");
+        Label commandsLabel = new Label(Localization.getString("able_comms"));
         ListView<String> commandsView = new ListView<>();
         commandsView.getItems().addAll(
-                "Добавить маршрут",
-                "Удалить маршрут по ключу",
-                "Редактировать маршрут",
-                "Выполнить скрипт"
+                Localization.getString("add_route"),
+                Localization.getString("remove_route_by_key") ,
+                Localization.getString("edit_route") ,
+                Localization.getString("execute_script")
         );
         commandsView.setPrefHeight(100);
 
         // информация о коллекции
         Label collectionInfoLabel = new Label("Информация о коллекции:");
-        Label typeLabel = new Label("Тип: Map<String, RouteDTO>");
+        Label typeLabel = new Label( Localization.getString("type") +": Map<String, RouteDTO>");
 
         VBox collectionBox = new VBox(5,
                 typeLabel,
@@ -43,26 +43,42 @@ public class InfoTabContent {
 
         // Добавляем всё во вкладку
         content.getChildren().addAll(commandsLabel, commandsView, collectionInfoLabel, collectionBox);
-
+        // Подписка на изменение локали
+        Localization.localeProperty().addListener((obs, oldLocale, newLocale) -> {
+            updateLocalizedText(commandsLabel, commandsView, collectionInfoLabel, typeLabel);
+        });
         // Подписка на изменение routeMap
         routeMapProperty.addListener((obs, oldMap, newMap) -> updateInfo(newMap));
         if (routeMapProperty.get() != null) {
             updateInfo(routeMapProperty.get());
         }
     }
+    private void updateLocalizedText(Label commandsLabel, ListView<String> commandsView,
+                                     Label collectionInfoLabel, Label typeLabel) {
+        // Обновляем текст элементов
+        commandsLabel.setText(Localization.getString("able_comms"));
+        commandsView.getItems().setAll(
+                Localization.getString("add_route"),
+                Localization.getString("remove_route_by_key"),
+                Localization.getString("edit_route"),
+                Localization.getString("execute_script")
+        );
+        collectionInfoLabel.setText(Localization.getString("main_info:"));
+        typeLabel.setText(Localization.getString("type") + ": Map<String, RouteDTO>");
+    }
 
     private void updateInfo(Map<String, RouteDTO> routeMap) {
         // Обновление размера
-        sizeLabel.setText("Количество элементов: " + routeMap.size());
+        sizeLabel.setText(Localization.getString("num_elts")+ ": " + routeMap.size());
 
         // Обновление даты первой записи
         if (!routeMap.isEmpty()) {
             Optional<RouteDTO> firstRoute = routeMap.values().stream()
                     .min(Comparator.comparingLong(RouteDTO::getCreationDate));
-            dateLabel.setText(firstRoute.map(route -> "Дата первой записи: " + new Date(route.getCreationDate()))
-                    .orElse("Дата первой записи: —"));
+            dateLabel.setText(firstRoute.map(route -> Localization.getString("date_of_firts_route")+ ": " + new Date(route.getCreationDate()))
+                    .orElse( Localization.getString("date_of_firts_route")+ ": —"));
         } else {
-            dateLabel.setText("Дата первой записи: —");
+            dateLabel.setText(Localization.getString("date_of_firts_route")+ ": —");
         }
     }
 
