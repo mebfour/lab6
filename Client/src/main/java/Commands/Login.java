@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.function.Consumer;
 
 import static ToStart.UserSession.currentUsername;
@@ -57,7 +56,6 @@ public class Login implements ClientCommand{
         // Отправляем запрос на сервер
         sendMessage.accept(jsonRequest);
     }
-
 
     @Override
     public String getName() {

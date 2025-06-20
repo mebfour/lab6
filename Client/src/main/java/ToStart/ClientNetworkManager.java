@@ -1,6 +1,5 @@
 package ToStart;
 
-import Classes.RouteDTO;
 import Commands.ClientCommand;
 import Commands.ClientCommandList;
 import InputHandler.KeyboardInputProvider;
@@ -8,8 +7,6 @@ import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.util.Pair;
 import java.io.IOException;

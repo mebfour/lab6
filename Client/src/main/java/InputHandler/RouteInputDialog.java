@@ -4,6 +4,7 @@ import Classes.Location;
 import Classes.Route;
 import Classes.RouteDTO;
 import ToStart.CommandRequest;
+import View.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -41,10 +42,10 @@ public class RouteInputDialog {
 
     private Dialog<Route> createDialog() {
         Dialog<Route> dialog = new Dialog<>();
-        dialog.setTitle("Добавление нового маршрута");
-        dialog.setHeaderText("Заполните все поля");
+        dialog.setTitle(Localization.getString("add_new_route"));
+        dialog.setHeaderText("fill in all fields");
 
-        ButtonType addButtonType = new ButtonType("Добавить", ButtonBar.ButtonData.OK_DONE);
+        ButtonType addButtonType = new ButtonType(Localization.getString("add"), ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
         dialog.getDialogPane().setContent(createInputGrid());
 
@@ -126,53 +127,53 @@ public class RouteInputDialog {
         fromZField = new TextField();
 
         // подсказки для полей
-        nameField.setPromptText("Название маршрута");
-        coordXField.setPromptText("Координата X (long)");
-        coordYField.setPromptText("Координата Y (int)");
-        toNameField.setPromptText("Название пункта назначения");
-        toXField.setPromptText("Координата X (float)");
-        toYField.setPromptText("Координата Y (int)");
-        toZField.setPromptText("Координата Z (int)");
-        fromNameField.setPromptText("Название пункта отправления");
-        fromXField.setPromptText("Координата X (float)");
-        fromYField.setPromptText("Координата Y (int)");
-        fromZField.setPromptText("Координата Z (int)");
+        nameField.setPromptText(Localization.getString("name"));
+        coordXField.setPromptText(Localization.getString("x_coord_l"));
+        coordYField.setPromptText(Localization.getString("y_coord_i"));
+        toNameField.setPromptText(Localization.getString("name_to"));
+        toXField.setPromptText(Localization.getString("x_coord_f"));
+        toYField.setPromptText(Localization.getString("y_coord_i"));
+        toZField.setPromptText(Localization.getString("z_coord_i"));
+        fromNameField.setPromptText(Localization.getString("name_from"));
+        fromXField.setPromptText(Localization.getString("x_coord_f"));
+        fromYField.setPromptText(Localization.getString("y_coord_i"));
+        fromZField.setPromptText(Localization.getString("z_coord_i"));
 
         // Добавляем компоненты на панель
         int row = 0;
 
         // Основная информация
-        grid.add(new Label("Основная информация:"), 0, row++, 2, 1);
-        grid.add(new Label("Название маршрута:"), 0, row);
+        grid.add(new Label(Localization.getString("main_info:")), 0, row++, 2, 1);
+        grid.add(new Label(Localization.getString("route_name:")), 0, row);
         grid.add(nameField, 1, row++);
 
         // Координаты
-        grid.add(new Label("Координаты:"), 0, row++, 2, 1);
+        grid.add(new Label(Localization.getString("coords:")), 0, row++, 2, 1);
         grid.add(new Label("X:"), 0, row);
         grid.add(coordXField, 1, row++);
         grid.add(new Label("Y:"), 0, row);
         grid.add(coordYField, 1, row++);
 
         // Локация "Куда"
-        grid.add(new Label("Пункт назначения:"), 0, row++, 2, 1);
-        grid.add(new Label("Название:"), 0, row);
+        grid.add(new Label(Localization.getString("to_place:")), 0, row++, 2, 1);
+        grid.add(new Label(Localization.getString("name")+':'), 0, row);
         grid.add(toNameField, 1, row++);
-        grid.add(new Label("Координата X:"), 0, row);
+        grid.add(new Label("X:"), 0, row);
         grid.add(toXField, 1, row++);
-        grid.add(new Label("Координата Y:"), 0, row);
+        grid.add(new Label("Y:"), 0, row);
         grid.add(toYField, 1, row++);
-        grid.add(new Label("Координата Z:"), 0, row);
+        grid.add(new Label("Z:"), 0, row);
         grid.add(toZField, 1, row++);
 
         // Локация "Откуда"
         grid.add(new Label("Пункт отправления:"), 0, row++, 2, 1);
-        grid.add(new Label("Название:"), 0, row);
+        grid.add(new Label(Localization.getString("name")+':'), 0, row);
         grid.add(fromNameField, 1, row++);
-        grid.add(new Label("Координата X:"), 0, row);
+        grid.add(new Label("X:"), 0, row);
         grid.add(fromXField, 1, row++);
-        grid.add(new Label("Координата Y:"), 0, row);
+        grid.add(new Label("Y:"), 0, row);
         grid.add(fromYField, 1, row++);
-        grid.add(new Label("Координата Z:"), 0, row);
+        grid.add(new Label("Z:"), 0, row);
         grid.add(fromZField, 1, row);
 
         // Добавляем валидацию для числовых полей
@@ -249,9 +250,9 @@ public class RouteInputDialog {
 
     private void showInputErrorAlert() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Ошибка ввода");
+        alert.setTitle(Localization.getString("inp_err"));
         alert.setHeaderText(null);
-        alert.setContentText("Проверьте правильность введенных числовых значений");
+        alert.setContentText(Localization.getString("check_correct"));
         alert.showAndWait();
     }
 
@@ -260,7 +261,6 @@ public class RouteInputDialog {
 
         if (result.isPresent()) {
             Route route = result.get();
-            System.out.println("user " + currentUsername);
             route.setOwner(currentUsername);
             String jsonRoute = gson.toJson(convertToDTO(route));
             CommandRequest commandRequest = new CommandRequest("add", jsonRoute, currentUsername);
@@ -297,8 +297,6 @@ public class RouteInputDialog {
 
         if (result.isPresent()) {
             Route route = result.get();
-            System.out.println("id " + route.getId());
-            System.out.println("key" + route.getKey());
             route.setOwner(currentUsername);
             route.setId(oldRoute.getId());
             route.setKey(oldRoute.getKey());

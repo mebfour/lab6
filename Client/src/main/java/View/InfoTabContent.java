@@ -26,7 +26,8 @@ public class InfoTabContent {
         commandsView.getItems().addAll(
                 "Добавить маршрут",
                 "Удалить маршрут по ключу",
-                "Редактировать маршрут"
+                "Редактировать маршрут",
+                "Выполнить скрипт"
         );
         commandsView.setPrefHeight(100);
 

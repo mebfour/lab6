@@ -1,12 +1,21 @@
 package View;
 
+import javafx.beans.property.SimpleObjectProperty;
+
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Localization {
     private static final Map<Locale, Map<String, String>> localizedStrings = new HashMap<>();
     private static Locale currentLocale = Locale.getDefault();
+    private static ZoneId currentZone;
+    private static final SimpleObjectProperty<Locale> localeProperty =
+            new SimpleObjectProperty<>(Locale.getDefault());
 
     static {
         // Русский
@@ -33,6 +42,21 @@ public class Localization {
         ru.put("execute_script", "Выполнить скрипт");
         ru.put("fill in all fields", "Заполните все поля");
         ru.put("tip_path", "Путь к файлу");
+        ru.put("add_new_route","Добавление нового маршрута");
+        ru.put("x_coord_l", "Координата X (long)");
+        ru.put("y_coord_i","Координата Y (int)");
+        ru.put("name_to","Название пункта назначения");
+        ru.put("x_coord_f","Координата X (float)");
+        ru.put("z_coord_i","Координата Z (int)");
+        ru.put("name_from","Название пункта отправления");
+        ru.put("main_info:","Основная информация:");
+        ru.put("route_name:", "Название маршрута:");
+        ru.put("coords:", "Координаты:");
+        ru.put("to_place:", "Пункт назначения:");
+        ru.put("from_place: ","Пункт отправления:" );
+        ru.put("inp_err", "Ошибка ввода");
+        ru.put("check_correct", "Проверьте правильность введенных числовых значений");
+
 
         localizedStrings.put(new Locale("ru"), ru);
 
@@ -60,7 +84,6 @@ public class Localization {
         nl.put("execute_script", "Script uitvoeren");
         nl.put("fill in all fields", "Vul alle velden in");
         nl.put("tip_path", "Vul alle velden in");
-
 
         localizedStrings.put(new Locale("nl"), nl);
 
@@ -119,11 +142,39 @@ public class Localization {
         localizedStrings.put(new Locale("en", "IN"), en_IN);
     }
 
+    public static ZoneId getCurrentZone() {
+        return currentZone;
+    }
+
+    public static void setCurrentZone(ZoneId currentZone) {
+        Localization.currentZone = currentZone;
+    }
+
     public static void setLocale(Locale locale) {
+        System.out.println("Изменили локацию на " + locale);
+        currentLocale = locale;
+        localeProperty.set(locale);
+        currentZone = getZoneIdByLocale(locale);
         if (localizedStrings.containsKey(locale)) {
             currentLocale = locale;
         }
     }
+
+
+
+    public static ZoneId getZoneIdByLocale(Locale locale) {
+        if (locale == null) {
+            return ZoneId.systemDefault(); // или ZoneId.of("UTC")
+        }
+
+        return switch (locale.getLanguage()) {
+            case "da" -> ZoneId.of("Europe/Copenhagen");  // Дания
+            case "nl" -> ZoneId.of("Europe/Amsterdam");   // Нидерланды
+            case "en" -> ZoneId.of("Asia/Kolkata");
+            default -> ZoneId.of("Europe/Moscow");         // Системный пояс
+        };
+    }
+
 
     public static String getString(String key) {
         return localizedStrings.get(currentLocale).getOrDefault(key, "???" + key + "???");
@@ -139,5 +190,19 @@ public class Localization {
 
     public static List<Locale> getSupportedLocales() {
         return new ArrayList<>(localizedStrings.keySet());
+    }
+
+
+    public static SimpleObjectProperty<Locale> localeProperty() {
+        return localeProperty;
+    }
+
+    public static String formatDate(long timestamp, ZoneId targetZone) {
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        ZonedDateTime userTime = instant.atZone(targetZone);
+
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofPattern("yyyy-MM-dd HH:mm:ss", currentLocale);
+        return userTime.format(formatter);
     }
 }

@@ -7,8 +7,6 @@ import InputHandler.ScriptInputDialog;
 import View.InfoTabContent;
 import View.Localization;
 import com.google.gson.Gson;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -22,18 +20,15 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.util.Duration;
 import View.MyBoundingBox;
 import javafx.scene.control.TabPane;
+import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-
-
+import static View.Localization.getCurrentZone;
 
 public class MainWindowController {
     private final BorderPane root = new BorderPane();
@@ -50,7 +45,6 @@ public class MainWindowController {
     private final Gson gson;
     private final ClientNetworkManager clientNetworkManager;
     Consumer<String> sendMessage;
-    private final AtomicBoolean mapIsLoad = new AtomicBoolean(false);
     private boolean initialLoadDone = false;
     private final ObjectProperty<Map<String, RouteDTO>> routeMapProperty = new SimpleObjectProperty<>();
 
@@ -63,8 +57,11 @@ public class MainWindowController {
         this.sendMessage = clientNetworkManager.getSendMessage();
         this.gson = clientNetworkManager.getGson();
         this.currentUser = username;
-        this.canvas  = new Canvas(800, 300);
-        this.canvas.setWidth(600);
+        this.canvas = new Canvas(300, 300); // Возвращаем исходный размер
+        StackPane canvasContainer = new StackPane(canvas);
+        canvasContainer.setStyle("-fx-background-color: lightgray;");
+        canvasContainer.setMinSize(300, 300);
+        canvasContainer.setMaxSize(300, 300);
         Localization.setLocale(new Locale("ru"));
         setupTable();
         Label userLabel = new Label("Пользователь: " + username);
@@ -198,10 +195,10 @@ public class MainWindowController {
 
         HBox buttonBox = new HBox(10, addButton, removeButton, editButton, scriptButton);
 
+
         // Устанавливаем минимальную ширину таблицы и максимальную для растяжения
         tableView.setMinWidth(400);
         tableView.setMaxWidth(Double.MAX_VALUE);
-        // Устанавливаем фиксированную ширину Canvas
 
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             double mouseX = event.getX();
@@ -220,13 +217,14 @@ public class MainWindowController {
         mainTab.setClosable(false); // Запрещаем закрывать вкладку
 
         HBox hBox = new HBox(10); // 10 — отступ между элементами
-        hBox.getChildren().addAll(tableView, canvas);
-
+        hBox.getChildren().addAll(tableView, canvasContainer);
+        HBox.setHgrow(tableView, Priority.ALWAYS);
+        HBox.setHgrow(canvasContainer, Priority.NEVER);
         BorderPane mainContent = new BorderPane();
         mainContent.setCenter(hBox);
         mainContent.setBottom(buttonBox);
+        mainContent.setPrefSize(Region.USE_PREF_SIZE, Region.USE_COMPUTED_SIZE);
         mainTab.setContent(mainContent);
-
 
         InfoTabContent infoTabContent = new InfoTabContent(routeMapProperty());
         this.infoTab = infoTabContent.getTab();
@@ -240,8 +238,10 @@ public class MainWindowController {
 
         languageSelector.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
+                System.out.println("Language selector изменился: " + newVal);
                 Localization.setLocale(newVal);
                 updateUILanguage(userLabel, addButton, editButton,removeButton, scriptButton); // Обновляем элементы интерфейса
+
             }
         });
         // Устанавливаем TabPane как основное содержимое root
@@ -297,8 +297,11 @@ public class MainWindowController {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setFill(Color.LIGHTGRAY);
         gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-
+        canvasContainer.setStyle("-fx-background-color: lightgray; -fx-border-color: #0024b6; -fx-border-width: 2px;");
     }
+
+
+
     private void updateUILanguage(Label userLabel, Button addButton, Button editButton, Button removeButton, Button scriptButton) {
         // Обновление текстовых меток
         userLabel.setText(Localization.getString("user_label") + currentUser);
@@ -340,7 +343,10 @@ public class MainWindowController {
                 }
             }
         }
-
+        // Полное обновление данных таблицы
+        ObservableList<RouteDTO> items = tableView.getItems();
+        tableView.setItems(FXCollections.observableArrayList());
+        tableView.setItems(items);
         drawRoutes(); // Перерисовываем легенду
     }
     public BorderPane getView() {
@@ -375,12 +381,26 @@ public class MainWindowController {
 
         // Колонка Дата создания
         TableColumn<RouteDTO, String> dateCol = new TableColumn<>(Localization.getString("creation_date"));
+
+        // Создаем динамически обновляемый формат даты
         dateCol.setCellValueFactory(data -> {
             RouteDTO route = data.getValue();
-            return new SimpleStringProperty(
-                    Localization.getDateFormat().format(new Date(route.getCreationDate()))
-            );
+            long timestamp = route.getCreationDate();
+            ZoneId userZone = getCurrentZone();
+            String formattedDate = Localization.formatDate(timestamp, userZone);
+            return new SimpleStringProperty(formattedDate);
         });
+
+        // Добавляем слушатель изменения локали
+        Localization.localeProperty().addListener((obs, oldLocale, newLocale) -> {
+            // Принудительно обновляем все ячейки
+            Platform.runLater(() -> {
+               tableView.refresh();
+               clientNetworkManager.loadRoutesFromMapAsync();
+
+            });
+        });
+
 
         // Колонка From
         TableColumn<RouteDTO, String> fromCol = new TableColumn<>(Localization.getString("from"));
@@ -420,12 +440,9 @@ public class MainWindowController {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // Фон
-        gc.setFill(Color.LIGHTGRAY);
-        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         double scale = 10;
-        userColors.clear(); // можно очищать или нет — зависит от поведения
+        userColors.clear();
 
         for (RouteDTO route : routeMap.values()) {
             double x = route.getX() * scale;
@@ -468,8 +485,9 @@ public class MainWindowController {
     private Paint getRandomColor() {
         return Color.hsb(random.nextInt(360), 0.8, 0.9);
     }
+
     private void drawLegend(GraphicsContext gc, Map<String, Paint> userColors) {
-        int legendX = (int) canvas.getWidth() - 100; // Позиция легенды
+        int legendX = (int) canvas.getWidth() - 150; // Позиция легенды
         int legendY = 50;
 
         for (String owner : userColors.keySet()) {
@@ -486,4 +504,5 @@ public class MainWindowController {
             legendY += 30; // Сдвигаем следующий элемент
         }
     }
+
 }
