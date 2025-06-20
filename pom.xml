@@ -14,4 +14,12 @@
     <module>client</module>
     <module>server</module>
   </modules>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
+
 </project>

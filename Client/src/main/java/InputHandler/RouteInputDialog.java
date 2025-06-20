@@ -43,7 +43,7 @@ public class RouteInputDialog {
     private Dialog<Route> createDialog() {
         Dialog<Route> dialog = new Dialog<>();
         dialog.setTitle(Localization.getString("add_new_route"));
-        dialog.setHeaderText("fill in all fields");
+        dialog.setHeaderText(Localization.getString("fill in all fields"));
 
         ButtonType addButtonType = new ButtonType(Localization.getString("add"), ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
