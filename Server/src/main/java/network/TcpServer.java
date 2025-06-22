@@ -22,7 +22,6 @@ public class TcpServer {
 
         this.port = port;
     }
-
     public void start() throws IOException {
         // Открываем серверный канал и селектор
         serverSocketChannel = ServerSocketChannel.open();

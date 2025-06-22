@@ -68,6 +68,7 @@ public class BDReader {
                 wrapper.setRouteMap(routes);
 
             } catch (Exception e) {
+                e.printStackTrace();
                 System.err.println("Ошибка при загрузке коллекции из базы данных");
             }
 

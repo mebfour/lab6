@@ -20,6 +20,8 @@ public class Localization {
     static {
         // Русский
         Map<String, String> ru = new HashMap<>();
+        ru.put("refresh", "Обновить");
+        ru.put("clear_collection", "Очистить коллекцию");
         ru.put("able_comms", "Доступные команды:");
         ru.put("add_route", "Добавить маршрут");
         ru.put("remove_route_by_key", "Удалить маршрут по ключу");
@@ -69,6 +71,8 @@ public class Localization {
 
         // Нидерландский
         Map<String, String> nl = new HashMap<>();
+        nl.put("refresh", "Update");
+        nl.put("clear_collection", "De collectie wissen");
         nl.put("add", "Toevoegen");
         nl.put("remove", "Verwijderen");
         nl.put("edit", "Bewerken");
@@ -118,6 +122,8 @@ public class Localization {
 
         // Датский
         Map<String, String> da = new HashMap<>();
+        da.put("refresh", "Opdatering");
+        da.put("clear_collection","Ryd samlingen");
         da.put("add", "Tilføj");
         da.put("remove", "Slet");
         da.put("edit", "Rediger");
@@ -167,6 +173,8 @@ public class Localization {
 
         // Английский (Индия)
         Map<String, String> en_IN = new HashMap<>();
+        en_IN.put("clear_collection", "Clear the collection");
+        en_IN.put("refresh", "Refresh");
         en_IN.put("add", "Add");
         en_IN.put("remove", "Remove");
         en_IN.put("edit", "Edit");

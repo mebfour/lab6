@@ -28,6 +28,8 @@ import javafx.scene.control.TabPane;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import static View.Localization.getCurrentZone;
 
 public class MainWindowController {
@@ -40,7 +42,7 @@ public class MainWindowController {
     private final String currentUser;
     private Map<String, RouteDTO> routeMap = new LinkedHashMap<>();
     private Canvas canvas;
-    private final Map<String, Paint> userColors = new HashMap<>();
+    private Map<String, Paint> userColors = new HashMap<>();
     private final Random random = new Random();
     private final Gson gson;
     private final ClientNetworkManager clientNetworkManager;
@@ -150,6 +152,51 @@ public class MainWindowController {
             }
 
         });
+        Button clearCollectionButton = new Button("Очистить коллекцию");
+        clearCollectionButton.setOnAction(event -> {
+            // Получаем список всех маршрутов пользователя
+            List<RouteDTO> userRoutes = tableView.getItems().stream()
+                    .filter(route -> route.getOwner().equals(username))
+                    .collect(Collectors.toList());
+
+            if (userRoutes.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Нет маршрутов");
+                alert.setHeaderText(null);
+                alert.setContentText("У вас нет маршрутов для удаления.");
+                alert.showAndWait();
+                return;
+            }
+
+            // Подтверждение удаления
+            Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmation.setTitle("Подтверждение удаления");
+            confirmation.setHeaderText("Вы уверены, что хотите удалить все свои маршруты?");
+            confirmation.setContentText("Будет удалено " + userRoutes.size() + " маршрутов.");
+
+            Optional<ButtonType> result = confirmation.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                // Удаляем маршруты из таблицы
+                tableView.getItems().removeAll(userRoutes);
+
+                // Отправляем команды на сервер для каждого маршрута
+                new Thread(() -> {
+                    for (RouteDTO route : userRoutes) {
+                        clientNetworkManager.sendCommand("remove_by_key", route.getKey(), username);
+                    }
+
+                    // Даем серверу время обработать и обновляем данные
+                    try {
+                        Thread.sleep(1000);
+                        Platform.runLater(() -> clientNetworkManager.sendGetRoutesCommand());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            }
+        });
+        Button refreshButton = new Button("Обновить");
+        refreshButton.setOnAction(event -> clientNetworkManager.loadRoutesFromMapAsync());
         Button editButton = new Button("Редактировать");
         editButton.setOnAction(event -> {
             RouteDTO selectedRoute = tableView.getSelectionModel().getSelectedItem();
@@ -193,7 +240,7 @@ public class MainWindowController {
 
         });
 
-        HBox buttonBox = new HBox(10, addButton, removeButton, editButton, scriptButton);
+        HBox buttonBox = new HBox(10, addButton, removeButton, editButton, scriptButton, clearCollectionButton, refreshButton);
 
 
         // Устанавливаем минимальную ширину таблицы и максимальную для растяжения
@@ -240,7 +287,7 @@ public class MainWindowController {
             if (newVal != null) {
                 System.out.println("Language selector изменился: " + newVal);
                 Localization.setLocale(newVal);
-                updateUILanguage(userLabel, addButton, editButton,removeButton, scriptButton); // Обновляем элементы интерфейса
+                updateUILanguage(userLabel, addButton, editButton,removeButton, scriptButton, clearCollectionButton, refreshButton); // Обновляем элементы интерфейса
 
             }
         });
@@ -303,14 +350,15 @@ public class MainWindowController {
 
 
 
-    private void updateUILanguage(Label userLabel, Button addButton, Button editButton, Button removeButton, Button scriptButton) {
+    private void updateUILanguage(Label userLabel, Button addButton, Button editButton, Button removeButton, Button scriptButton, Button clearCollectionButton, Button refreshButton) {
         // Обновление текстовых меток
         userLabel.setText(Localization.getString("user_label") + currentUser);
         addButton.setText(Localization.getString("add"));
         removeButton.setText(Localization.getString("remove"));
         editButton.setText(Localization.getString("edit"));
         scriptButton.setText(Localization.getString("execute_script"));
-
+        clearCollectionButton.setText(Localization.getString("clear_collection"));
+        refreshButton.setText(Localization.getString("refresh"));
         // Обновляем заголовки вкладок
         mainTab.setText(Localization.getString("routes"));
         infoTab.setText(Localization.getString("information"));
@@ -461,20 +509,15 @@ public class MainWindowController {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-
         double scale = 10;
         userColors.clear();
-
+        double offsetY = canvas.getHeight(); // Начало Y — снизу
         for (RouteDTO route : routeMap.values()) {
             double x = route.getX() * scale;
-            double y = route.getY() * scale;
+            double y = offsetY - route.getY() * scale;
             String owner = route.getOwner();
 
-            if (!userColors.containsKey(owner)) {
-                userColors.put(owner, getRandomColor());
-            }
-
-            Paint color = userColors.get(owner);
+            Paint color = getColorForUser(owner); // замена на стабильный цвет
 
             // Рисуем точку
             gc.setFill(color);
@@ -503,12 +546,20 @@ public class MainWindowController {
         alert.showAndWait();
     }
 
-    private Paint getRandomColor() {
-        return Color.hsb(random.nextInt(360), 0.8, 0.9);
+
+
+    private Paint getColorForUser(String owner) {
+        if (!userColors.containsKey(owner)) {
+            int seed = owner.hashCode();
+            int hue = Math.abs(seed % 360);
+            Paint color = Color.hsb(hue, 0.8, 0.9);
+            userColors.put(owner, color);
+        }
+        return userColors.get(owner);
     }
 
     private void drawLegend(GraphicsContext gc, Map<String, Paint> userColors) {
-        int legendX = (int) canvas.getWidth() - 150; // Позиция легенды
+        int legendX = (int) canvas.getWidth() - 100; // Позиция легенды
         int legendY = 50;
 
         for (String owner : userColors.keySet()) {

@@ -98,7 +98,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>Start</mainClass> <!-- Укажите полный путь к вашему классу с main -->
+                    <mainClass>Start</mainClass>
                 </configuration>
             </plugin>
             <plugin>

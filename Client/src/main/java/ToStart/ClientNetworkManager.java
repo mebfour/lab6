@@ -334,6 +334,7 @@ public class ClientNetworkManager {
                 }
             }
         } catch (IOException e) {
+            e.printStackTrace();
             System.err.println("Ошибка подключения");
         }
 
