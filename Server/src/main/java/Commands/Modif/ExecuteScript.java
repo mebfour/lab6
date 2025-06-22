@@ -22,8 +22,6 @@ public class ExecuteScript implements Command {
         if (args == null || args.trim().isEmpty()) {
             return new CommandResponse("Скрипт пуст.", true);
         }
-
-        // Разбиваем скрипт на строки и имитируем выполнение
         String[] lines = args.split("\\r?\\n");
         int lineNum = 0;
 

@@ -1,18 +1,12 @@
 package Commands.Ordin;
 
-import Collection.RouteCollectionManager;
 import Commands.CommandResponse;
 import Commands.Command;
-import Commands.CommandList;
-
 import java.util.Map;
-
 import static Collection.RouteCollectionManager.routeList;
 import static managers.CommandManager.commandList;
 
 public class HelpCommand implements Command {
-
-
 
     @Override
     public CommandResponse execute(String args) {

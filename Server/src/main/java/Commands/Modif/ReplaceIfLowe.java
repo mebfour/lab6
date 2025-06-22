@@ -5,12 +5,7 @@ import Classes.Route;
 import Collection.RouteCollectionManager;
 import Commands.Command;
 import Commands.CommandResponse;
-
-
-import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static Collection.RouteCollectionManager.routeList;
 import static users.LoginCommand.username;
 
 public class ReplaceIfLowe implements Command {
