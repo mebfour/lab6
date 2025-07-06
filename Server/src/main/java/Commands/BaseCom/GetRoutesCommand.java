@@ -2,19 +2,12 @@ package Commands.BaseCom;
 
 import Classes.Route;
 import Classes.RouteDTO;
-import Collection.RouteCollectionManager;
 import Commands.BDProcessing.BDReader;
 import Commands.Command;
 import Commands.CommandResponse;
 import com.google.gson.Gson;
-
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-
-import static Collection.RouteCollectionManager.routeList;
-
 
 public class GetRoutesCommand implements Command {
 

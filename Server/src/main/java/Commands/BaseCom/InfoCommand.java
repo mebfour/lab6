@@ -2,9 +2,7 @@ package Commands.BaseCom;
 
 import Commands.Command;
 import Commands.CommandResponse;
-
 import java.util.Date;
-
 import static managers.CommandManager.collectionManager;
 
 public class InfoCommand implements Command {

@@ -2,7 +2,6 @@ package ToStart;
 
 import Commands.ClientCommand;
 import Commands.ClientCommandList;
-import InputHandler.KeyboardInputProvider;
 import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -28,12 +27,10 @@ public class ClientNetworkManager {
     private volatile CommandResponse lastResponse = null;
     private SocketChannel socketChannel;    //  Каждый SocketChannel, зарегистрированный в Selector, имеет связанный объект SelectionKey
     private Selector selector;      //  позволяет одному потоку ожидать событий на множестве открытых каналов.
-    private final Scanner scanner = new Scanner(System.in);
     private final ByteBuffer readLengthBuffer = ByteBuffer.allocate(4); // для чтения длины
     private ByteBuffer readDataBuffer = null; // для чтения данных сообщения
     private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
     private final Consumer<String> sendMessage;
-    private boolean isAuthorized;
     private CountDownLatch responseLatch;
     public static CommandResponse routeResponse;
     private final SimpleObjectProperty<CommandResponse> commandResponse = new SimpleObjectProperty<>();
@@ -46,10 +43,6 @@ public class ClientNetworkManager {
 
     public ObjectProperty<CommandResponse> routeResponseProperty() {
         return routeResponseProperty;
-    }
-
-    public void setRouteResponse(CommandResponse response) {
-        routeResponseProperty.set(response);
     }
 
     public Gson getGson() {
@@ -237,7 +230,6 @@ public class ClientNetworkManager {
     }
 
     public void loadRoutesFromMapAsync() {
-        KeyboardInputProvider provider = new KeyboardInputProvider(scanner);
         String[] parts = "get_routes".split(" ");
         try {
             ClientCommandList commandList = ClientCommandList.create(socketChannel, gson, sendMessage, this::checkIdOnServer);
@@ -344,8 +336,5 @@ public class ClientNetworkManager {
         return sendMessage;
     }
 
-    public boolean isAuthorized() {
-        return isAuthorized;
-    }
 
 }

@@ -3,7 +3,6 @@ package ToStart;
 import Classes.RouteDTO;
 import InputHandler.JsonToRouteMapper;
 import InputHandler.RouteInputDialog;
-import InputHandler.ScriptInputDialog;
 import View.InfoTabContent;
 import View.Localization;
 import com.google.gson.Gson;
@@ -43,7 +42,6 @@ public class MainWindowController {
     private Map<String, RouteDTO> routeMap = new LinkedHashMap<>();
     private Canvas canvas;
     private Map<String, Paint> userColors = new HashMap<>();
-    private final Random random = new Random();
     private final Gson gson;
     private final ClientNetworkManager clientNetworkManager;
     Consumer<String> sendMessage;
@@ -68,30 +66,6 @@ public class MainWindowController {
         Localization.setLocale(new Locale("ru"));
         setupTable();
         Label userLabel = new Label(Localization.getString("user") + username);
-        Button scriptButton = new Button(Localization.getString("script"));
-        scriptButton.setOnAction(event -> {
-            ScriptInputDialog dialog = new ScriptInputDialog(username, gson, sendMessage);
-            dialog.showAndSend();
-
-            // Подписываемся на ответ от сервера
-            ChangeListener<CommandResponse> listener = new ChangeListener<>() {
-                @Override
-                public void changed(ObservableValue<? extends CommandResponse> obs, CommandResponse oldVal, CommandResponse newVal) {
-                    if (newVal != null && newVal.isSuccess()) {
-                        // Только после успешного выполнения add — запрашиваем обновление данных
-                        clientNetworkManager.sendGetRoutesCommand();
-                        clientNetworkManager.loadRoutesFromMapAsync();
-
-                    }
-                    // Отписываемся после первого срабатывания
-                    clientNetworkManager.commandResponseProperty().removeListener(this);
-                }
-            };
-
-            // Подписываем слушатель
-            clientNetworkManager.commandResponseProperty().addListener(listener);
-            clientNetworkManager.loadRoutesFromMapAsync();
-        });
 
         Button addButton = new Button("Добавить");
         addButton.setOnAction(event -> {
@@ -152,6 +126,8 @@ public class MainWindowController {
             }
 
         });
+
+
         Button clearCollectionButton = new Button("Очистить коллекцию");
         clearCollectionButton.setOnAction(event -> {
             // Получаем список всех маршрутов пользователя
@@ -240,7 +216,7 @@ public class MainWindowController {
 
         });
 
-        HBox buttonBox = new HBox(10, addButton, removeButton, editButton, scriptButton, clearCollectionButton, refreshButton);
+        HBox buttonBox = new HBox(10, addButton, removeButton, editButton, clearCollectionButton, refreshButton);
 
 
         // Устанавливаем минимальную ширину таблицы и максимальную для растяжения
@@ -287,7 +263,7 @@ public class MainWindowController {
             if (newVal != null) {
                 System.out.println("Language selector изменился: " + newVal);
                 Localization.setLocale(newVal);
-                updateUILanguage(userLabel, addButton, editButton,removeButton, scriptButton, clearCollectionButton, refreshButton); // Обновляем элементы интерфейса
+                updateUILanguage(userLabel, addButton, editButton,removeButton, clearCollectionButton, refreshButton); // Обновляем элементы интерфейса
 
             }
         });
@@ -350,13 +326,12 @@ public class MainWindowController {
 
 
 
-    private void updateUILanguage(Label userLabel, Button addButton, Button editButton, Button removeButton, Button scriptButton, Button clearCollectionButton, Button refreshButton) {
+    private void updateUILanguage(Label userLabel, Button addButton, Button editButton, Button removeButton, Button clearCollectionButton, Button refreshButton) {
         // Обновление текстовых меток
         userLabel.setText(Localization.getString("user_label") + currentUser);
         addButton.setText(Localization.getString("add"));
         removeButton.setText(Localization.getString("remove"));
         editButton.setText(Localization.getString("edit"));
-        scriptButton.setText(Localization.getString("execute_script"));
         clearCollectionButton.setText(Localization.getString("clear_collection"));
         refreshButton.setText(Localization.getString("refresh"));
         // Обновляем заголовки вкладок

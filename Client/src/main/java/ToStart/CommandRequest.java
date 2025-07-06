@@ -12,7 +12,6 @@ public class CommandRequest implements Serializable {
         this.args = args;
         this.username = username;
     }
-
     public String getCommandName() {
         return commandName;
     }

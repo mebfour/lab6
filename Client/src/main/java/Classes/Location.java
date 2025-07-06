@@ -3,7 +3,7 @@ package Classes;
 public class Location {
 
     private float x;
-    private Integer y; //Поле не может быть null
+    private Integer y;
     private int z;
     private String name;
 

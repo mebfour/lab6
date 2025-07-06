@@ -65,6 +65,7 @@ public class Localization {
         ru.put("to_place:", "Пункт назначения:");
         ru.put("from_place: ","Пункт отправления:" );
         ru.put("inp_err", "Ошибка ввода");
+        ru.put("check_route_to_del", "Выберите маршрут для удаления.");
         ru.put("check_correct", "Проверьте правильность введенных числовых значений");
 
         localizedStrings.put(new Locale("ru"), ru);
@@ -116,6 +117,7 @@ public class Localization {
         nl.put("to_place:", "Bestemming:");
         nl.put("from_place:", "Vertrekpunt:");
         nl.put("inp_err", "Invoerfout");
+        nl.put("check_route_to_del", "Selecteer een route om te verwijderen.");
         nl.put("check_correct", "Controleer de juistheid van de ingevoerde numerieke waarden");
 
         localizedStrings.put(new Locale("nl"), nl);
@@ -164,6 +166,7 @@ public class Localization {
         da.put("main_info:", "Hovedinformation:");
         da.put("route_name:", "Rutenavn:");
         da.put("coords:", "Koordinater:");
+        da.put("check_route_to_del", "Vælg en rute, der skal slettes.");
         da.put("to_place:", "Destinationssted:");
         da.put("from_place: ", "Afgangssted:");
         da.put("inp_err", "Inputfejl");
@@ -189,6 +192,7 @@ public class Localization {
         en_IN.put("from", "From");
         en_IN.put("to", "To");
         en_IN.put("key", "Key");
+        en_IN.put("check_route_to_del", "Select a route to delete.");
         en_IN.put("from_name", "From Name");
         en_IN.put("to_name", "To Name");
         en_IN.put("routes", "Routes");

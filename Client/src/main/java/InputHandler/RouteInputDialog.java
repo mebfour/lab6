@@ -166,7 +166,7 @@ public class RouteInputDialog {
         grid.add(toZField, 1, row++);
 
         // Локация "Откуда"
-        grid.add(new Label("Пункт отправления:"), 0, row++, 2, 1);
+        grid.add(new Label(Localization.getString("name_from")), 0, row++, 2, 1);
         grid.add(new Label(Localization.getString("name")+':'), 0, row);
         grid.add(fromNameField, 1, row++);
         grid.add(new Label("X:"), 0, row);

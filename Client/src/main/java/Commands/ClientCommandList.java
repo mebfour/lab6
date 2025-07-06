@@ -19,11 +19,7 @@ public class ClientCommandList implements Iterable<ClientCommand> {
         List<ClientCommand> commands = List.of(
                 new Register(gson, sendMessage),
                 new RemoveByKeyCommand(gson, sendMessage),
-                new RemoveGreaterCommand(gson, sendMessage),
-                new RemoveLowerCommand(gson, sendMessage),
-                new ReplaceIfLoweCommand(gson, sendMessage),
                 new UpdateIdCommand(gson, sendMessage, idChecker),
-                new ExecuteScriptCommand(gson, sendMessage, new ArrayList<>(), new HashSet<>()),
                 new Login(gson, sendMessage)
         );
 

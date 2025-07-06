@@ -4,14 +4,12 @@ import Classes.Coordinates;
 import Classes.Location;
 import Classes.Route;
 import sql.DataSourceProvider;
-
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Date;
 import java.util.LinkedHashMap;
-
 
 public class BDReader {
     public static RouteWrapper readRoutesFromBd(){

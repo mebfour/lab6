@@ -4,14 +4,10 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-
 import Classes.Route;
-
 import static Collection.RouteCollectionManager.routeList;
 
 
@@ -20,7 +16,6 @@ import static Collection.RouteCollectionManager.routeList;
 public class RouteWrapper {
     private Date initializationTime;
     private Map<String, Route> routeMap = routeList;
-    private List<Route> routes;
     @XmlElement(name = "initializationTime")
     public Date getInitializationTime() {
         return initializationTime;
@@ -47,13 +42,5 @@ public class RouteWrapper {
     public RouteWrapper(LinkedHashMap<String, Route> routeMap) {
         this.routeMap = routeMap;
     }
-
-    // Геттер и сеттер для коллекции
-
-
-
-
-
-
 
 }

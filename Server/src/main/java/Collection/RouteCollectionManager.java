@@ -196,23 +196,4 @@ public class RouteCollectionManager {
         }
     }
 
-
-//    public void saveToFile() {
-//        String filePath = globalFilePath;
-//        try {
-//            RouteWrapper wrapper = new RouteWrapper();
-//            wrapper.setRouteMap(routeList);
-//            wrapper.setInitializationTime(initializationTime);
-//
-//            JAXBContext context = JAXBContext.newInstance(RouteWrapper.class, Route.class);
-//            Marshaller marshaller = context.createMarshaller();
-//            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-//
-//            marshaller.marshal(wrapper, new File(filePath));
-//        } catch (Exception e) {
-//
-//            System.err.println("Ошибка при сохранении в XML");
-//        }
-
-    //}
 }

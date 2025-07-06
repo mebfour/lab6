@@ -1,7 +1,6 @@
 package Commands;
 
 import Classes.RouteDTO;
-
 import java.util.Map;
 
 public class CommandResponse {
@@ -28,8 +27,6 @@ public class CommandResponse {
         return success;
     }
     public Map<String, RouteDTO> getRouteList() {return routeList;}
-
-
 
     @Override
     public String toString() {

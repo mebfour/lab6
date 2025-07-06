@@ -3,7 +3,6 @@ package Commands.BaseCom;
 import Classes.Route;
 import Commands.Command;
 import Commands.CommandResponse;
-
 import static Collection.RouteCollectionManager.routeList;
 
 public class ShowCommand implements Command {
